@@ -1,0 +1,15 @@
+*~
+Debug/
+Optimized/
+INSTALL
+*.in
+.anjuta*
+*.anjuta
+configure
+aclocal.m4
+autom4te.cache/
+compile
+depcomp
+install-sh
+missing
+
