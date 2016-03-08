@@ -1,0 +1,89 @@
+<!--
+	gnzb Usenet downloads using NZB index files
+
+    Copyright (C) 2016  Richard J. Fellinger, Jr
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; version 2 of the License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+	<gresource prefix="/org/richfell/gnzb">
+		<file preprocess="xml-stripblanks">gui/mainwin.ui</file>
+		<file preprocess="xml-stripblanks">gui/about/about.ui</file>
+		<file preprocess="xml-stripblanks">gui/preferences/preferences.ui</file>
+		<file preprocess="xml-stripblanks">gui/groups/groups.ui</file>
+		<file>db/gnzb-sys.sql</file>
+	</gresource>
+	<gresource prefix="/org/richfell/gnzb/images">
+		<file>icons/app/appicon24.png</file>
+		<file>icons/app/appicon32.png</file>
+		<file>icons/app/appicon64.png</file>
+		<file>icons/infobar/download-speed.png</file>
+		<file>icons/infobar/remaining-time.png</file>
+		<file>icons/infobar/remaining-size.png</file>
+		<file>icons/infobar/transferred.png</file>
+		<file>icons/infobar/conns.png</file>
+		<file>icons/toolbar/add.png</file>
+		<file>icons/toolbar/add-selected.png</file>
+		<file>icons/toolbar/cancel.png</file>
+		<file>icons/toolbar/cancel-selected.png</file>
+		<file>icons/toolbar/detailview.png</file>
+		<file>icons/toolbar/detailview-selected.png</file>
+		<file>icons/toolbar/info.png</file>
+		<file>icons/toolbar/info-selected.png</file>
+		<file>icons/toolbar/pause.png</file>
+		<file>icons/toolbar/pause-selected.png</file>
+		<file>icons/toolbar/preferences.png</file>
+		<file>icons/toolbar/preferences-selected.png</file>
+		<file>icons/toolbar/resume.png</file>
+		<file>icons/toolbar/resume-selected.png</file>
+		<file>icons/toolbar/summary.png</file>
+		<file>icons/toolbar/summary-selected.png</file>
+		<file>icons/filetype/64x64/binary.png</file>
+		<file>icons/filetype/64x64/generic.png</file>
+		<file>icons/filetype/64x64/mkv.png</file>
+		<file>icons/filetype/64x64/mp3.png</file>
+		<file>icons/filetype/64x64/NFO.png</file>
+		<file>icons/filetype/64x64/rar.png</file>
+		<file>icons/filetype/64x64/repair.png</file>
+		<file>icons/filetype/64x64/repair-idx.png</file>
+		<file>icons/filetype/64x64/sfv.png</file>
+		<file>icons/filetype/64x64/XML.png</file>
+		<file>icons/filetype/64x64/zip.png</file>
+		<file>icons/filetype/24x24/binary.png</file>
+		<file>icons/filetype/24x24/generic.png</file>
+		<file>icons/filetype/24x24/mkv.png</file>
+		<file>icons/filetype/24x24/mp3.png</file>
+		<file>icons/filetype/24x24/NFO.png</file>
+		<file>icons/filetype/24x24/rar.png</file>
+		<file>icons/filetype/24x24/repair.png</file>
+		<file>icons/filetype/24x24/repair-idx.png</file>
+		<file>icons/filetype/24x24/sfv.png</file>
+		<file>icons/filetype/24x24/XML.png</file>
+		<file>icons/filetype/24x24/zip.png</file>
+		<file>icons/preferences/credentials-passed.png</file>
+		<file>icons/preferences/credentials-failed.png</file>
+		<file>icons/actions/delete.png</file>
+		<file>icons/actions/delete-pressed.png</file>
+		<file>icons/actions/finished.png</file>
+		<file>icons/actions/finished-pressed.png</file>
+		<file>icons/actions/pause.png</file>
+		<file>icons/actions/pause-pressed.png</file>
+		<file>icons/actions/show.png</file>
+		<file>icons/actions/show-pressed.png</file>
+		<file>icons/actions/start.png</file>
+		<file>icons/actions/start-pressed.png</file>
+	</gresource>
+</gresources>
