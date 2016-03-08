@@ -242,12 +242,17 @@ void GNzbGroup::setNameExcludes(const char *regexOrTokenStr)
 	parseRegexOrTokens(regexOrTokenStr, mAutoAssignExc);
 }
 
-bool GNzbGroup::doesMatchInclude(const char *name) const
+bool GNzbGroup::doesMatch(const std::string& name) const
+{
+	return doesMatchInclude(name) && !doesMatchExclude(name);
+}
+
+bool GNzbGroup::doesMatchInclude(const std::string& name) const
 {
 	return doesMatchAny(name, mAutoAssignInc);
 }
 
-bool GNzbGroup::doesMatchExclude(const char *name) const
+bool GNzbGroup::doesMatchExclude(const std::string& name) const
 {
 	return doesMatchAny(name, mAutoAssignExc);
 }

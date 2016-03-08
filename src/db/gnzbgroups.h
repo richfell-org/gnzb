@@ -95,8 +95,10 @@ public:
 // operations
 public:
 
-	bool doesMatchInclude(const char *name) const;
-	bool doesMatchExclude(const char *name) const;
+	bool doesMatch(const std::string& name) const;
+
+	bool doesMatchInclude(const std::string& name) const;
+	bool doesMatchExclude(const std::string& name) const;
 
 	bool isDbRecord() const { return 0 < m_rec_id; }
 	bool operator ==(const GNzbGroup& that) const;

@@ -79,7 +79,6 @@ GNzbApplicationWindow::GNzbApplicationWindow(GtkApplicationWindow *p_object, con
 	// set handlers for signals
 	mp_treeview->get_selection()->signal_changed().connect(
 		sigc::mem_fun(*this, &GNzbApplicationWindow::on_nzb_selection_changed));
-	//mp_treeview->signal_action().connect(sigc::mem_fun(*this, &GNzbApplicationWindow::on_gnzb_action));
 	mp_treeview->signal_group().connect(sigc::mem_fun(*this, &GNzbApplicationWindow::on_gnzb_group));
 
 	// connect Drag-n-Drop handler signal to open NZB file handler
@@ -114,14 +113,12 @@ void GNzbApplicationWindow::open_nzb_file(const std::string& file_path)
 
 	// find matching group, default to none
 	ptr_gnzb->ptr_group(&m_gnzb_groups[0]);
-	for(auto& group : m_gnzb_groups)
-	{
-		if(group.doAutoAssignGroup() && group.doesMatchInclude(file_path.c_str())
-		   && !group.doesMatchExclude(file_path.c_str()))
-		{
-			ptr_gnzb->ptr_group(&group);
-		}
-	}
+	auto group_iter = std::find_if(
+		m_gnzb_groups.begin() + 1,
+		m_gnzb_groups.end(),
+		[&file_path](const GNzbGroup& g) { return g.doAutoAssignGroup() && g.doesMatch(file_path);});
+	if(group_iter != m_gnzb_groups.end())
+		ptr_gnzb->ptr_group(&*group_iter);
 
 	// add to the GNzb treeview
 	Gtk::TreeIter iter = mp_treeview->get_nzb_model()->append(ptr_gnzb);
@@ -275,14 +272,17 @@ void GNzbApplicationWindow::gnzb_updated(const Gtk::TreeIter& gnzb_iter)
 Gtk::TreeIter GNzbApplicationWindow::find_next_queued_nzb()
 {
 	Glib::RefPtr<NzbListStore> ref_model = mp_treeview->get_nzb_model();
-	for(auto iter : ref_model->children())
-	{
-		std::shared_ptr<GNzb> ptr_gnzb = (*iter)[ref_model->columns().gnzb()];
-		if(ptr_gnzb->state() == GNzbState::WAITING)
-			return iter;
-	}
-	
-	return Gtk::TreeIter();
+	auto children = ref_model->children();
+	auto gnzb_iter = std::find_if(
+		children.begin(),
+		children.end(),
+		[&ref_model](const Gtk::TreeRow& row)
+		{
+			auto ptr_gnzb = row.get_value(ref_model->columns().gnzb());
+			return ptr_gnzb->state() == GNzbState::WAITING;
+		});
+
+	return gnzb_iter ? gnzb_iter : Gtk::TreeIter();
 }
 
 void GNzbApplicationWindow::move_gnzb_to_top(const GNzb *p_gnzb)
