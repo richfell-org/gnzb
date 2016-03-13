@@ -26,8 +26,8 @@ FolderSelectionListStore::FolderSelectionListStore()
 :   FileSystemItemListStore()
 {
 	Gtk::TreeIter iter = prepend();
-	(*iter)[cols().col_type()] = FS_ITEM;
-	(*iter)[cols().col_text()] = sFslsSelectDirText;
+	(*iter)[columns().type()] = FS_ITEM;
+	(*iter)[columns().text()] = sFslsSelectDirText;
 }
 
 FolderSelectionListStore::~FolderSelectionListStore()
@@ -41,14 +41,14 @@ void FolderSelectionListStore::setDirectory(const std::string& fq_directory_path
 		text = FileNameHelper(fq_directory_path.c_str()).get_name();
 
 	Gtk::TreeIter iter = children().begin();
-	(*iter)[cols().col_fq_path()] = fq_directory_path;
-	(*iter)[cols().col_text()] = text;
+	(*iter)[columns().fq_path()] = fq_directory_path;
+	(*iter)[columns().text()] = text;
 }
 
 void FolderSelectionListStore::setDirectoryIcon(Glib::RefPtr<Gio::Icon> ref_icon)
 {
 	Gtk::TreeIter iter = children().begin();
-	(*iter)[cols().col_icon()] = ref_icon;
+	(*iter)[columns().icon()] = ref_icon;
 }
 
 std::string FolderSelectionListStore::getDirectory()
@@ -56,7 +56,7 @@ std::string FolderSelectionListStore::getDirectory()
 	std::string result("");
 
 	Gtk::TreeIter iter = children().begin();
-	const Glib::ustring& dirString = (Glib::ustring)(*iter)[cols().col_fq_path()];
+	const Glib::ustring& dirString = (Glib::ustring)(*iter)[columns().fq_path()];
 	if(0 != sFslsSelectDirText.compare(dirString))
 		result.assign(dirString.c_str());
 	return result;

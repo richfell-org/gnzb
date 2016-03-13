@@ -498,7 +498,7 @@ void GroupsInterface::onMoveToLocationChanged()
 		= Glib::RefPtr<FolderSelectionListStore>::cast_dynamic(mpComboMoveLocation->get_model());
 
 	Gtk::TreeIter iter = mpComboMoveLocation->get_active();
-	if((*iter)[ref_location_model->cols().col_type()] == FolderSelectionListStore::SELECT)
+	if((*iter)[ref_location_model->columns().type()] == FolderSelectionListStore::SELECT)
 	{
 		// get the index for the currently selected group
 		Glib::RefPtr<GroupsListStore> ref_model
@@ -547,8 +547,8 @@ void GroupsInterface::initWidgets()
 
 	mpComboMoveLocation->pack_start(*pPixbufRenderer, false);
 	mpComboMoveLocation->pack_end(*pTextRenderer);
-	mpComboMoveLocation->add_attribute(*pPixbufRenderer, "gicon", moveToLocationModel->cols().col_icon());
-	mpComboMoveLocation->add_attribute(*pTextRenderer, "text", moveToLocationModel->cols().col_text());
+	mpComboMoveLocation->add_attribute(*pPixbufRenderer, "gicon", moveToLocationModel->columns().icon());
+	mpComboMoveLocation->add_attribute(*pTextRenderer, "text", moveToLocationModel->columns().text());
 
 	// listen for color selection changes
 	mpBtnGroupColor->signal_color_set().connect(sigc::mem_fun(*this, &GroupsInterface::onNzbGroupColorSet));

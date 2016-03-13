@@ -42,7 +42,7 @@ void PrefsLocationsInterface::onDlLocationChanged(Gtk::ComboBox *pComboBox)
 		= Glib::RefPtr<FolderSelectionListStore>::cast_dynamic(pComboBox->get_model());
 
 	Gtk::TreeIter iter = pComboBox->get_active();
-	if((*iter)[dlLocationModel->cols().col_type()] == FolderSelectionListStore::SELECT)
+	if((*iter)[dlLocationModel->columns().type()] == FolderSelectionListStore::SELECT)
 	{
 		//Gtk::FileChooserDialog dirChooser(*mpPrefsDialog, "Select Location...", Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
 		Gtk::FileChooserDialog dirChooser("Select Location...", Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
@@ -88,8 +88,8 @@ void PrefsLocationsInterface::init(const AppPreferences& app_prefs, Glib::RefPtr
 
 	mpComboLocation->pack_start(*pPixbufRenderer, false);
 	mpComboLocation->pack_end(*pTextRenderer);
-	mpComboLocation->add_attribute(*pPixbufRenderer, "gicon", dlLocationModel->cols().col_icon());
-	mpComboLocation->add_attribute(*pTextRenderer, "text", dlLocationModel->cols().col_text());
+	mpComboLocation->add_attribute(*pPixbufRenderer, "gicon", dlLocationModel->columns().icon());
+	mpComboLocation->add_attribute(*pTextRenderer, "text", dlLocationModel->columns().text());
 
 	mpComboLocation->set_active(dlLocationModel->children().begin());
 	mpComboLocation->signal_changed().connect(
@@ -126,8 +126,8 @@ void PrefsLocationsInterface::init(const AppPreferences& app_prefs, Glib::RefPtr
 
 	mpComboMoveToLocation->pack_start(*pPixbufRenderer, false);
 	mpComboMoveToLocation->pack_end(*pTextRenderer);
-	mpComboMoveToLocation->add_attribute(*pPixbufRenderer, "gicon", dlLocationModel->cols().col_icon());
-	mpComboMoveToLocation->add_attribute(*pTextRenderer, "text", dlLocationModel->cols().col_text());
+	mpComboMoveToLocation->add_attribute(*pPixbufRenderer, "gicon", dlLocationModel->columns().icon());
+	mpComboMoveToLocation->add_attribute(*pTextRenderer, "text", dlLocationModel->columns().text());
 
 	mpComboMoveToLocation->set_active(dlLocationModel->children().begin());
 	mpComboMoveToLocation->signal_changed().connect(

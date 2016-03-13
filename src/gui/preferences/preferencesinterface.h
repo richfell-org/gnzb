@@ -81,9 +81,9 @@ private:
 
 	// the tabs within the preferences dialog
 	NntpServerInterface m_servers_tab;
-	PrefsLocationsInterface mLocationsTab;
-	PrefsNotificationsInterface mNotificationsTab;
-	PrefsScriptsInterface mScriptsTab;
+	PrefsLocationsInterface m_locations_tab;
+	PrefsNotificationsInterface m_notifications_tab;
+	PrefsScriptsInterface m_scripts_tab;
 };
 
 #endif  /* __PREFERENCES_INTERFACE_HEADER__ */

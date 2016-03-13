@@ -39,17 +39,17 @@ public:
 		Columns();
 		~Columns() {}
 
-		Gtk::TreeModelColumn<int>& col_type() { return m_col_type; }
-		const Gtk::TreeModelColumn<int>& col_type() const { return m_col_type; }
+		Gtk::TreeModelColumn<int>& type() { return m_col_type; }
+		const Gtk::TreeModelColumn<int>& type() const { return m_col_type; }
 
-		Gtk::TreeModelColumn<Glib::ustring>& col_fq_path() { return m_col_fq_path; }
-		const Gtk::TreeModelColumn<Glib::ustring>& col_fq_path() const { return m_col_fq_path; }
+		Gtk::TreeModelColumn<Glib::ustring>& fq_path() { return m_col_fq_path; }
+		const Gtk::TreeModelColumn<Glib::ustring>& fq_path() const { return m_col_fq_path; }
 
-		Gtk::TreeModelColumn<Glib::RefPtr<Gio::Icon>> col_icon() { return m_col_icon; }
-		const Gtk::TreeModelColumn<Glib::RefPtr<Gio::Icon>> col_icon() const { return m_col_icon; }
+		Gtk::TreeModelColumn<Glib::RefPtr<Gio::Icon>>& icon() { return m_col_icon; }
+		const Gtk::TreeModelColumn<Glib::RefPtr<Gio::Icon>>& icon() const { return m_col_icon; }
 
-		Gtk::TreeModelColumn<Glib::ustring>& col_text() { return m_col_text; }
-		const Gtk::TreeModelColumn<Glib::ustring>& col_text() const { return m_col_text; }
+		Gtk::TreeModelColumn<Glib::ustring>& text() { return m_col_text; }
+		const Gtk::TreeModelColumn<Glib::ustring>& text() const { return m_col_text; }
 		
 	private:
 
@@ -59,8 +59,8 @@ public:
 		Gtk::TreeModelColumn<Glib::ustring> m_col_text;
 	};
 
-	Columns& cols() { return m_cols; }
-	const Columns& cols() const { return m_cols; }
+	Columns& columns() { return m_cols; }
+	const Columns& columns() const { return m_cols; }
 
 	enum EntryType { FS_ITEM, SEPARATOR, SELECT, };
 

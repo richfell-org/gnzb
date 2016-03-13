@@ -25,7 +25,6 @@
 #include <mutex>
 #include <libusenet/nzb.h>
 #include <libusenet/binParts.h>
-#include <glibmm/refptr.h>
 #include "db/nzbdb.h"
 
 // state of an NZB in the tree view and an NZB file in the file tree view
@@ -102,7 +101,7 @@ public:
 
 	// the download state of the associated NZB::File
 	GNzbState state() const { return m_state; }
-	FileMeta& state(GNzbState s) { m_state = s; }
+	FileMeta& state(GNzbState s) { m_state = s; return *this; }
 
 	// the total size of the associated NZB::File
 	unsigned long total_size() const { return m_total_size; }
@@ -261,55 +260,6 @@ private:
 	double m_peak_rate{0.0};
 };
 
-namespace Gtk { class TreeModel; }
-
-/**
- * 
- */
-class GNzbGuiState
-{
-// construction/destruction
-public:
-
-	GNzbGuiState();
-	GNzbGuiState(GNzbGuiState&& that);
-	GNzbGuiState(const GNzbGuiState& that);
-	~GNzbGuiState();
-
-// attrubutes
-public:
-
-	// the NZB::File model
-	Glib::RefPtr<Gtk::TreeModel>& files_model() { return m_ref_files_model; }
-	const Glib::RefPtr<Gtk::TreeModel>& files_model() const { return m_ref_files_model; }
-	GNzbGuiState& files_model(const Glib::RefPtr<Gtk::TreeModel>& model);
-	GNzbGuiState& files_model(Glib::RefPtr<Gtk::TreeModel>&& model);
-
-	double vertical_value() const { return m_value_v; }
-	GNzbGuiState& vertical_value(double value) { m_value_v = value; return *this; }
-
-	double horizontal_value() const { return m_value_h; }
-	GNzbGuiState& horizontal_value(double value) { m_value_h = value; return *this; }
-
-	// the top row path when the model was last set in the NZB::File tree view
-	std::string& top_row_path() { return m_top_row_path; }
-	const std::string& top_row_path() const { return m_top_row_path; }
-	GNzbGuiState& top_row_path(const std::string& path);
-	GNzbGuiState& top_row_path(std::string&& path);
-
-// operations
-public:
-
-	GNzbGuiState& operator =(GNzbGuiState&& that);
-	GNzbGuiState& operator =(const GNzbGuiState& that);
-
-private:
-
-	Glib::RefPtr<Gtk::TreeModel> m_ref_files_model;
-	double m_value_v{0.0}, m_value_h{0.0};
-	std::string m_top_row_path;
-};
-
 /**
  * 
  * 
@@ -359,11 +309,6 @@ public:
 	GNzb& download_data(DownloadData&& data) { m_dl_data = data; return *this; }
 	GNzb& download_data(const DownloadData& data) { m_dl_data = data; return *this; }
 
-	GNzbGuiState& gui_state() { return m_gui_state; }
-	const GNzbGuiState& gui_state() const { return m_gui_state; }
-	GNzb& gui_state(GNzbGuiState&& state) { m_gui_state = std::move(state); return *this; }
-	GNzb& gui_state(const GNzbGuiState& state) { m_gui_state = state; return *this; }
-
 	std::mutex& update_mutex() { return m_mutex; }
 	const std::mutex& update_mutex() const { return m_mutex; }
 
@@ -404,8 +349,6 @@ private:
 	GNzbState m_state;
 
 	DownloadData m_dl_data;
-
-	GNzbGuiState m_gui_state;
 
 	std::mutex m_mutex;
 };

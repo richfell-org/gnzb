@@ -26,8 +26,8 @@ SingleFileListStore::SingleFileListStore()
 :   FileSystemItemListStore()
 {
 	Gtk::TreeIter iter = prepend();
-	(*iter)[cols().col_type()] = FS_ITEM;
-	(*iter)[cols().col_text()] = sSflsSelectDirText;
+	(*iter)[columns().type()] = FS_ITEM;
+	(*iter)[columns().text()] = sSflsSelectDirText;
 }
 
 SingleFileListStore::~SingleFileListStore()
@@ -41,23 +41,38 @@ void SingleFileListStore::set_file(const std::string& fq_path)
 		text = FileNameHelper(fq_path.c_str()).get_name();
 
 	Gtk::TreeIter iter = children().begin();
-	(*iter)[cols().col_fq_path()] = fq_path;
-	(*iter)[cols().col_text()] = text;
+	(*iter)[columns().fq_path()] = fq_path;
+	(*iter)[columns().text()] = text;
+}
+
+std::string SingleFileListStore::get_file() const
+{
+	std::string result("");
+
+	Gtk::TreeIter iter = children().begin();
+	const Glib::ustring& dir_string = (Glib::ustring)(*iter)[columns().fq_path()];
+	if(0 != sSflsSelectDirText.compare(dir_string))
+		result.assign(dir_string.c_str());
+	return result;
 }
 
 void SingleFileListStore::set_file_icon(Glib::RefPtr<Gio::Icon> ref_icon)
 {
 	Gtk::TreeIter iter = children().begin();
-	(*iter)[cols().col_icon()] = ref_icon;
+	(*iter)[columns().icon()] = ref_icon;
 }
 
-std::string SingleFileListStore::get_file()
+Glib::RefPtr<Gio::Icon> SingleFileListStore::get_file_icon() const
 {
-	std::string result("");
-
 	Gtk::TreeIter iter = children().begin();
-	const Glib::ustring& dir_string = (Glib::ustring)(*iter)[cols().col_fq_path()];
-	if(0 != sSflsSelectDirText.compare(dir_string))
-		result.assign(dir_string.c_str());
-	return result;
+	return (*iter)[columns().icon()];
+}
+
+void SingleFileListStore::clear_selection()
+{
+	Gtk::TreeIter iter = children().begin();
+	(*iter)[columns().fq_path()] = Glib::ustring();
+	(*iter)[columns().type()] = FS_ITEM;
+	(*iter)[columns().text()] = sSflsSelectDirText;
+	(*iter)[columns().icon()] = Glib::RefPtr<Gio::Icon>();
 }

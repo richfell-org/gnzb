@@ -126,7 +126,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkNotebook" id="mainNotebook">
+              <object class="GtkNotebook" id="preferences.notebook">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <child>
@@ -1035,9 +1035,6 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="active">0</property>
-                            <items>
-                              <item id="libpython2.7.so" translatable="yes">2.7</item>
-                            </items>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -1067,7 +1064,7 @@
                             <property name="margin_left">18</property>
                             <property name="margin_top">6</property>
                             <property name="margin_bottom">6</property>
-                            <property name="row_spacing">3</property>
+                            <property name="row_spacing">6</property>
                             <property name="column_spacing">12</property>
                             <property name="row_homogeneous">True</property>
                             <child>

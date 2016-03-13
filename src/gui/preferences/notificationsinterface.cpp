@@ -50,8 +50,8 @@ static void initSelectionCombo(Gtk::ComboBox *pComboBox, Glib::RefPtr<FileListSt
 
 	pComboBox->pack_start(*pPixbufRenderer, false);
 	pComboBox->pack_end(*pTextRenderer);
-	pComboBox->add_attribute(*pPixbufRenderer, "gicon", ref_model->cols().col_icon());
-	pComboBox->add_attribute(*pTextRenderer, "text", ref_model->cols().col_text());
+	pComboBox->add_attribute(*pPixbufRenderer, "gicon", ref_model->columns().icon());
+	pComboBox->add_attribute(*pTextRenderer, "text", ref_model->columns().text());
 }
 
 void PrefsNotificationsInterface::init(const AppPreferences& app_prefs, Glib::RefPtr<Gtk::Builder>& ref_builder)
@@ -222,7 +222,7 @@ void PrefsNotificationsInterface::on_file_selection_changed(Gtk::ComboBox *p_com
 		= Glib::RefPtr<FileListStore>::cast_dynamic(p_combo->get_model());
 
 	Gtk::TreeIter iter = p_combo->get_active();
-	if((*iter)[ref_model->cols().col_type()] != FileListStore::SELECT)
+	if((*iter)[ref_model->columns().type()] != FileListStore::SELECT)
 		set_modified();
 	else
 	{

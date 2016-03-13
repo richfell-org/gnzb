@@ -43,7 +43,6 @@ create table SystemAttributes (
 );
 
 INSERT INTO "SystemAttributes" VALUES(1, 'Window State', x'000A000A00C800640064000000000000');
-INSERT INTO "SystemAttributes" VALUES(2, 'Python Module', 'libpython2.7.so');
 
 drop table if exists NzbGroups;
 create table NzbGroups (

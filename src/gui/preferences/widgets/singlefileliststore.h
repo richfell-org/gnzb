@@ -32,9 +32,16 @@ public:
 	SingleFileListStore();
 	~SingleFileListStore();
 
+// operations
+public:
+
 	void set_file(const std::string& fq_path);
+	std::string get_file() const;
+
 	void set_file_icon(Glib::RefPtr<Gio::Icon> ref_icon);
-	std::string get_file();
+	Glib::RefPtr<Gio::Icon> get_file_icon() const;
+
+	void clear_selection();
 };
 
 #endif  /* __SINGLE_FILE_LIST_STORE__ */

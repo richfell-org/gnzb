@@ -9,6 +9,8 @@
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/filechooserdialog.h>
 
+#include "config.h"
+
 PrefsScriptsInterface::PrefsScriptsInterface()
 :   mpToggleEnableScripting(nullptr), mpComboPythonVersion(nullptr),
 	mpToggleNzbAdded(nullptr), mpComboNzbAdded(nullptr),
@@ -32,8 +34,8 @@ static void initSelectionCombo(Gtk::ComboBox *pComboBox, Glib::RefPtr<SingleFile
 
 	pComboBox->pack_start(*pPixbufRenderer, false);
 	pComboBox->pack_end(*pTextRenderer);
-	pComboBox->add_attribute(*pPixbufRenderer, "gicon", refModel->cols().col_icon());
-	pComboBox->add_attribute(*pTextRenderer, "text", refModel->cols().col_text());
+	pComboBox->add_attribute(*pPixbufRenderer, "gicon", refModel->columns().icon());
+	pComboBox->add_attribute(*pTextRenderer, "text", refModel->columns().text());
 }
 
 void PrefsScriptsInterface::init(const AppPreferences& app_prefs, Glib::RefPtr<Gtk::Builder>& ref_builder)
@@ -54,8 +56,19 @@ void PrefsScriptsInterface::init(const AppPreferences& app_prefs, Glib::RefPtr<G
 	mpToggleEnableScripting->set_active(app_prefs.getScriptingEnabled());
 	mpToggleEnableScripting->signal_toggled().connect(sigc::mem_fun(*this, &PrefsScriptsInterface::onScriptingEnabledChanged));
 
+#ifdef GNZB_PLUGIN_PY2
+	mpComboPythonVersion->append(Glib::ustring("libgnzbpy2.so"), Glib::ustring("2"));
+#endif  /* GNZB_PLUGIN_PY2 */
+#ifdef GNZB_PLUGIN_PY3
+	mpComboPythonVersion->append(Glib::ustring("libgnzbpy3.so"), Glib::ustring("3"));
+#endif  /* GNZB_PLUGIN_PY3 */
+
 	// get the python version TODO: read python version from preferences system attributes
-	mpComboPythonVersion->set_active_id(app_prefs.getSysAttrString(SA_PYMODULE));
+	std::string cur_module = app_prefs.getSysAttrString(SA_PYMODULE);
+	if(cur_module.empty())
+		mpComboPythonVersion->set_active(0);
+	else
+		mpComboPythonVersion->set_active_id(cur_module);
 
 	// set sensitivity for the current state
 	onScriptingEnabledChanged();
@@ -76,25 +89,19 @@ void PrefsScriptsInterface::init(const AppPreferences& app_prefs, Glib::RefPtr<G
 
 	Glib::RefPtr<SingleFileListStore> refListStore = Glib::RefPtr<SingleFileListStore>(new SingleFileListStore);
 	initSelectionCombo(mpComboNzbAdded, refListStore, mpToggleNzbAdded->get_active());
-	std::string path = app_prefs.getNzbAddedScript();
-	if(!path.empty())
-		setScriptOnNzbAdded(path);
+	setScriptOnNzbAdded(app_prefs.getNzbAddedScript());
 	mpComboNzbAdded->set_active(0);
 	mpComboNzbAdded->signal_changed().connect(sigc::bind<Gtk::ComboBox*>(sigc::mem_fun(*this, &PrefsScriptsInterface::onFileSelectionChanged), mpComboNzbAdded));
 
 	refListStore = Glib::RefPtr<SingleFileListStore>(new SingleFileListStore);
 	initSelectionCombo(mpComboNzbFinished, refListStore, mpToggleNzbFinished->get_active());
-	path = app_prefs.getNzbFinishedScript();
-	if(!path.empty())
-		setScriptOnNzbFinished(path);
+	setScriptOnNzbFinished(app_prefs.getNzbFinishedScript());
 	mpComboNzbFinished->set_active(0);
 	mpComboNzbFinished->signal_changed().connect(sigc::bind<Gtk::ComboBox*>(sigc::mem_fun(*this, &PrefsScriptsInterface::onFileSelectionChanged), mpComboNzbFinished));
 
 	refListStore = Glib::RefPtr<SingleFileListStore>(new SingleFileListStore);
 	initSelectionCombo(mpComboNzbCancelled, refListStore, mpToggleNzbCancelled->get_active());
-	path = app_prefs.getNzbCancelledScript();
-	if(path.empty())
-		setScriptOnNzbCancelled(path);
+	setScriptOnNzbCancelled(app_prefs.getNzbCancelledScript());
 	mpComboNzbCancelled->set_active(0);
 	mpComboNzbCancelled->signal_changed().connect(sigc::bind<Gtk::ComboBox*>(sigc::mem_fun(*this, &PrefsScriptsInterface::onFileSelectionChanged), mpComboNzbCancelled));
 
@@ -131,7 +138,7 @@ void PrefsScriptsInterface::onFileSelectionChanged(Gtk::ComboBox *pComboBox)
 		= Glib::RefPtr<SingleFileListStore>::cast_dynamic(pComboBox->get_model());
 
 	Gtk::TreeIter iter = pComboBox->get_active();
-	if((*iter)[comboModel->cols().col_type()] == SingleFileListStore::SELECT)
+	if((*iter)[comboModel->columns().type()] == SingleFileListStore::SELECT)
 	{
 		Gtk::FileChooserDialog dirChooser("Select Location...", Gtk::FILE_CHOOSER_ACTION_OPEN);
 		dirChooser.set_create_folders();
@@ -198,8 +205,9 @@ std::string PrefsScriptsInterface::getScriptOnNzbAdded() const
 	std::string result("");
 	if(0 != mpComboNzbAdded)
 	{
-		Glib::RefPtr<SingleFileListStore> refModel = Glib::RefPtr<SingleFileListStore>::cast_dynamic(mpComboNzbAdded->get_model());
-		result = refModel->get_file();
+		Glib::RefPtr<SingleFileListStore> ref_model
+			= Glib::RefPtr<SingleFileListStore>::cast_dynamic(mpComboNzbAdded->get_model());
+		result = ref_model->get_file();
 	}
 	return result;
 }
@@ -208,9 +216,15 @@ void PrefsScriptsInterface::setScriptOnNzbAdded(const std::string& filename)
 {
 	if(0 != mpComboNzbAdded)
 	{
-		Glib::RefPtr<SingleFileListStore> refModel = Glib::RefPtr<SingleFileListStore>::cast_dynamic(mpComboNzbAdded->get_model());
-		refModel->set_file(filename);
-		refModel->set_file_icon(get_icon_for_path(filename));
+		Glib::RefPtr<SingleFileListStore> ref_model
+			= Glib::RefPtr<SingleFileListStore>::cast_dynamic(mpComboNzbAdded->get_model());
+		if(filename.empty())
+			ref_model->clear_selection();
+		else
+		{
+			ref_model->set_file(filename);
+			ref_model->set_file_icon(get_icon_for_path(filename));
+		}
 	}
 }
 
@@ -233,8 +247,9 @@ std::string PrefsScriptsInterface::getScriptOnNzbFinished() const
 	std::string result("");
 	if(0 != mpComboNzbFinished)
 	{
-		Glib::RefPtr<SingleFileListStore> refModel = Glib::RefPtr<SingleFileListStore>::cast_dynamic(mpComboNzbFinished->get_model());
-		result = refModel->get_file();
+		Glib::RefPtr<SingleFileListStore> ref_model
+			= Glib::RefPtr<SingleFileListStore>::cast_dynamic(mpComboNzbFinished->get_model());
+		result = ref_model->get_file();
 	}
 	return result;
 }
@@ -243,9 +258,15 @@ void PrefsScriptsInterface::setScriptOnNzbFinished(const std::string& filename)
 {
 	if(0 != mpComboNzbFinished)
 	{
-		Glib::RefPtr<SingleFileListStore> refModel = Glib::RefPtr<SingleFileListStore>::cast_dynamic(mpComboNzbFinished->get_model());
-		refModel->set_file(filename);
-		refModel->set_file_icon(get_icon_for_path(filename));
+		Glib::RefPtr<SingleFileListStore> ref_model
+			= Glib::RefPtr<SingleFileListStore>::cast_dynamic(mpComboNzbFinished->get_model());
+		if(filename.empty())
+			ref_model->clear_selection();
+		else
+		{
+			ref_model->set_file(filename);
+			ref_model->set_file_icon(get_icon_for_path(filename));
+		}
 	}
 }
 
@@ -268,8 +289,9 @@ std::string PrefsScriptsInterface::getScriptOnNzbCancelled() const
 	std::string result("");
 	if(0 != mpComboNzbCancelled)
 	{
-		Glib::RefPtr<SingleFileListStore> refModel = Glib::RefPtr<SingleFileListStore>::cast_dynamic(mpComboNzbCancelled->get_model());
-		result = refModel->get_file();
+		Glib::RefPtr<SingleFileListStore> ref_model
+			= Glib::RefPtr<SingleFileListStore>::cast_dynamic(mpComboNzbCancelled->get_model());
+		result = ref_model->get_file();
 	}
 	return result;
 }
@@ -278,8 +300,14 @@ void PrefsScriptsInterface::setScriptOnNzbCancelled(const std::string& filename)
 {
 	if(0 != mpComboNzbCancelled)
 	{
-		Glib::RefPtr<SingleFileListStore> refModel = Glib::RefPtr<SingleFileListStore>::cast_dynamic(mpComboNzbCancelled->get_model());
-		refModel->set_file(filename);
-		refModel->set_file_icon(get_icon_for_path(filename));
+		Glib::RefPtr<SingleFileListStore> ref_model
+			= Glib::RefPtr<SingleFileListStore>::cast_dynamic(mpComboNzbCancelled->get_model());
+		if(filename.empty())
+			ref_model->clear_selection();
+		else
+		{
+			ref_model->set_file(filename);
+			ref_model->set_file_icon(get_icon_for_path(filename));
+		}
 	}
 }

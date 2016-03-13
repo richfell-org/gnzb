@@ -34,12 +34,12 @@ FileSystemItemListStore::FileSystemItemListStore()
 	set_column_types(m_cols);
 
 	Gtk::TreeIter iter = append();
-	(*iter)[cols().col_type()] = SEPARATOR;
-	(*iter)[cols().col_text()] = "separator";
+	(*iter)[columns().type()] = SEPARATOR;
+	(*iter)[columns().text()] = "separator";
 
 	iter = append();
-	(*iter)[cols().col_type()] = SELECT;
-	(*iter)[cols().col_text()] = "Other...";
+	(*iter)[columns().type()] = SELECT;
+	(*iter)[columns().text()] = "Other...";
 }
 
 Gtk::TreeIter FileSystemItemListStore::appendFileSystemItem(const std::string& fq_path)
@@ -47,9 +47,9 @@ Gtk::TreeIter FileSystemItemListStore::appendFileSystemItem(const std::string& f
 	Glib::ustring text = FileNameHelper(fq_path.c_str()).get_name();
 
 	Gtk::TreeIter iter = insert(find_separator());
-	(*iter)[cols().col_type()] = FS_ITEM;
-	(*iter)[cols().col_fq_path()] = fq_path;
-	(*iter)[cols().col_text()] = text;
+	(*iter)[columns().type()] = FS_ITEM;
+	(*iter)[columns().fq_path()] = fq_path;
+	(*iter)[columns().text()] = text;
 
 	return iter;
 }
@@ -59,10 +59,10 @@ Gtk::TreeIter FileSystemItemListStore::appendFileSystemItem(const std::string& f
 	Glib::ustring text = FileNameHelper(fq_path.c_str()).get_name();
 
 	Gtk::TreeIter iter = insert(find_separator());
-	(*iter)[cols().col_type()] = FS_ITEM;
-	(*iter)[cols().col_fq_path()] = fq_path;
-	(*iter)[cols().col_text()] = text;
-	(*iter)[cols().col_icon()] = ref_icon;
+	(*iter)[columns().type()] = FS_ITEM;
+	(*iter)[columns().fq_path()] = fq_path;
+	(*iter)[columns().text()] = text;
+	(*iter)[columns().icon()] = ref_icon;
 
 	return iter;
 }
@@ -72,9 +72,9 @@ Gtk::TreeIter FileSystemItemListStore::prependFileSystemItem(const std::string& 
 	Glib::ustring text = FileNameHelper(fq_path.c_str()).get_name();
 
 	Gtk::TreeIter iter = prepend();
-	(*iter)[cols().col_type()] = FS_ITEM;
-	(*iter)[cols().col_fq_path()] = fq_path;
-	(*iter)[cols().col_text()] = text;
+	(*iter)[columns().type()] = FS_ITEM;
+	(*iter)[columns().fq_path()] = fq_path;
+	(*iter)[columns().text()] = text;
 
 	return iter;
 }
@@ -84,24 +84,24 @@ Gtk::TreeIter FileSystemItemListStore::prependFileSystemItem(const std::string& 
 	Glib::ustring text = FileNameHelper(fq_path.c_str()).get_name();
 
 	Gtk::TreeIter iter = prepend();
-	(*iter)[cols().col_type()] = FS_ITEM;
-	(*iter)[cols().col_fq_path()] = fq_path;
-	(*iter)[cols().col_text()] = text;
-	(*iter)[cols().col_icon()] = ref_icon;
+	(*iter)[columns().type()] = FS_ITEM;
+	(*iter)[columns().fq_path()] = fq_path;
+	(*iter)[columns().text()] = text;
+	(*iter)[columns().icon()] = ref_icon;
 
 	return iter;
 }
 
 std::string FileSystemItemListStore::getFileSystemItemPath(Gtk::TreeIter& iter)
 {
-	return std::string((Glib::ustring)(*iter)[cols().col_fq_path()]);
+	return std::string((Glib::ustring)(*iter)[columns().fq_path()]);
 }
 
 Gtk::TreeIter FileSystemItemListStore::findByPath(const std::string& fq_path)
 {
 	for(auto& iter : children())
 	{
-		if(0 == ((Glib::ustring)(*iter)[cols().col_fq_path()]).compare(fq_path))
+		if(0 == ((Glib::ustring)(*iter)[columns().fq_path()]).compare(fq_path))
 			return iter;
 	}
 
@@ -110,7 +110,7 @@ Gtk::TreeIter FileSystemItemListStore::findByPath(const std::string& fq_path)
 
 bool FileSystemItemListStore::isRowSeparator(const Glib::RefPtr<Gtk::TreeModel>& model, const Gtk::TreeModel::iterator& iter)
 {
-	bool result = ((*iter)[cols().col_type()] == SEPARATOR); 
+	bool result = ((*iter)[columns().type()] == SEPARATOR); 
 	return result;
 }
 
@@ -119,7 +119,7 @@ Gtk::TreeIter FileSystemItemListStore::find_separator()
 	Gtk::TreeIter result = children().begin();
 	for(; result != children().end(); ++result)
 	{
-		if((*result)[cols().col_type()] == SEPARATOR)
+		if((*result)[columns().type()] == SEPARATOR)
 			break;
 	}
 	return result;

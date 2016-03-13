@@ -24,8 +24,13 @@
 #include <gtkmm/dialog.h>
 #include <gtkmm/button.h>
 #include <gtkmm/messagedialog.h>
+#ifndef PLUGINS_ENABLED
+#   include <gtkmm/notebook.h>
+#endif
 #include "../guiutil.h"
 #include "../../uiresource.h"
+
+#include "config.h"
 
 PreferencesInterface::PreferencesInterface()
 :   mDirtyCategories(0), mpPrefsDialog(nullptr)
@@ -65,9 +70,14 @@ PreferencesInterface::CategoryBitset PreferencesInterface::run(Gtk::Window *pPar
 
 	// initialize dialog box widgets with the current settings
 	m_servers_tab.init(m_app_prefs, ref_builder);
-	mLocationsTab.init(m_app_prefs, ref_builder);
-	mNotificationsTab.init(m_app_prefs, ref_builder);
-	mScriptsTab.init(m_app_prefs, ref_builder);
+	m_locations_tab.init(m_app_prefs, ref_builder);
+	m_notifications_tab.init(m_app_prefs, ref_builder);
+#ifdef PLUGINS_ENABLED
+	m_scripts_tab.init(m_app_prefs, ref_builder);
+#else
+	Gtk::Notebook *p_notebook = get_managed_widget<Gtk::Notebook>(ref_builder, "preferences.notebook");
+	p_notebook->remove_page(p_notebook->get_n_pages() - 1);
+#endif  /* PLUGINS_ENABLED */
 
 	// run the dialog
 	int dialogResult = mpPrefsDialog->run();
@@ -99,24 +109,24 @@ void PreferencesInterface::on_save_preferences(Gtk::Dialog *pPrefsDialog)
 	}
 
 	// download directories/actions modified
-	if(mLocationsTab.is_modified())
+	if(m_locations_tab.is_modified())
 	{
 		mDirtyCategories[PREF_LOCATION] = true;
-		mLocationsTab.save(m_app_prefs);
+		m_locations_tab.save(m_app_prefs);
 	}
 
 	// notifications modified
-	if(mNotificationsTab.is_modified())
+	if(m_notifications_tab.is_modified())
 	{
 		mDirtyCategories[PREF_NOTIFICATIONS] = true;
-		mNotificationsTab.save(m_app_prefs);
+		m_notifications_tab.save(m_app_prefs);
 	}
 
 	// sctipting options modified?
-	if(mScriptsTab.is_modified())
+	if(m_scripts_tab.is_modified())
 	{
 		mDirtyCategories[PREF_SCRIPTS] = true;
-		mScriptsTab.save(m_app_prefs);
+		m_scripts_tab.save(m_app_prefs);
 	}
 
 	// set the response for the dialog
