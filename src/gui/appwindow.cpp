@@ -106,10 +106,6 @@ GNzbApplicationWindow::~GNzbApplicationWindow()
 		remove_file_treeview((*iter)[ref_gnzb_store->columns().gnzb()]);
 }
 
-#include "plugin/scriptplugin.h"
-
-ScriptPlugin plugin_module;
-
 void GNzbApplicationWindow::open_nzb_file(const std::string& file_path)
 {
 	// parse the NZB file and add it to the main NZB list
@@ -131,10 +127,6 @@ void GNzbApplicationWindow::open_nzb_file(const std::string& file_path)
 
 	// add an NZB::File treeview for this NZB file
 	add_file_treeview(ptr_gnzb);
-
-	// scripting?
-	if(plugin_module.is_loaded())
-		plugin_module.gnzb_added(ptr_gnzb);
 
 	// set the summary window
 	m_win_summary.setNzbSummary(*ptr_gnzb);
@@ -438,29 +430,8 @@ std::string operator""s (const char* p, size_t n)	// std::string literal
 	return std::string(p,n);	// requires free store allocation
 }
 
-#include <thread>
-#include <chrono>
-#include <iostream>
-
 void GNzbApplicationWindow::on_pause_all()
 {
-	try
-	{
-		if(!plugin_module.is_loaded())
-		{
-			plugin_module.load("/home/richfell/projects/gnzb/Debug/plugins/python3/src/.libs/libgnzbpy3.so.1.0.0"s);
-			plugin_module.initialize_for_source("/home/richfell/src/python/gnzbhandler.py"s);
-		}
-		else
-		{
-			std::cout << "Unloading module " << plugin_module.path() << std::endl;
-			plugin_module.unload();
-		}
-	}
-	catch(const std::exception& e)
-	{
-		show_error(*this, Glib::ustring("Plugin load error"), Glib::ustring(e.what())); 
-	}
 }
 
 void GNzbApplicationWindow::on_cancel_all()
@@ -766,8 +737,8 @@ void GNzbApplicationWindow::update_gui_state()
 	manipulate_action(ma_file_resume_all.name, action_manip);
 
 	// pause all
-	//enabled = (nQueued + nDl) > 0;
-	//manipulate_action(ma_file_pause_all.name, action_manip);
+	enabled = (nQueued + nDl) > 0;
+	manipulate_action(ma_file_pause_all.name, action_manip);
 
 	// cancel all
 	enabled = (nQueued + nDl + nPaused) > 0;
