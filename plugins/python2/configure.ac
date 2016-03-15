@@ -10,14 +10,14 @@ AX_PTHREAD()
 AC_SEARCH_LIBS([dlopen], [dl dld], [], [AC_MSG_ERROR([unable to find the dlopen() function])])
 AC_SEARCH_LIBS([dlsym], [dl dld], [], [AC_MSG_ERROR([unable to find the dlsym() function])])
 AC_SEARCH_LIBS([dlclose], [dl dld], [], [AC_MSG_ERROR([unable to find the dlclose() function])])
-PKG_CHECK_MODULES(GNZBPY2, [python libusenet])
-PKG_CHECK_MODULES(PYVER, [python])
+PKG_CHECK_MODULES(GNZBPY2, [sigc++-2.0 libusenet])
+PKG_CHECK_MODULES(PYTHON, [python])
 LT_INIT([disable-static])
 AC_SUBST([LIBTOOL_DEPS])
 AC_SUBST(LIBVER_INFO, [1:0:0])
 
 dnl define string for the python lib name
-AC_DEFINE_UNQUOTED(PYLIB_NAME, [`echo $PYVER_LIBS | sed -e 's/-l//' -e 's/\(.*\)/"lib\1.so"/'`], [python library name])
+AC_DEFINE_UNQUOTED(PYLIB_NAME, [`echo $PYTHON_LIBS | sed -e 's/-l//' -e 's/\(.*\)/"lib\1.so"/'`], [python library name])
 
 AC_OUTPUT([
 Makefile

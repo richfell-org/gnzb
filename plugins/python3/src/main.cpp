@@ -1,5 +1,5 @@
 /*
-	gnzb python3 DSO plugin - gnzb python2 integration
+	gnzb python3 DSO plugin - gnzb python3 integration
 
     Copyright (C) 2016  Richard J. Fellinger, Jr
 
@@ -17,14 +17,15 @@
 	to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 	Boston, MA 02110-1301 USA.
 */
+#include <Python.h>
 #include <memory>
 #include <thread>
-#include <cwchar>
-#include <CXX/WrapPython.h>
 #include "module/gnzbmodule.h"
-#include "pyobject/gnzbpyobject.h"
+//#include "pyobject/gnzbpyobject.h"
 #include <gnzb.h>
+#include <plugin/gnzbplugin.h>
 #include <dlfcn.h>
+#include "util.h"
 
 #include "../config.h"
 
@@ -34,166 +35,12 @@
 
 #define	 PATH_MAX_ 256
 
-// used for PySys_SetArgv
-static wchar_t py_progname[PATH_MAX_];
-static wchar_t *py_argv[] = { py_progname, nullptr };
-
 // global python main thread state
-PyThreadState* p_py_main_threadstate;
-
-// gnzb's python extension module
-static std::unique_ptr<GNzbPyModule> ptr_pymodule;
-
-// python script entry points
-static Py::Callable gnzb_added;
-static Py::Callable gnzb_finished;
-static Py::Callable gnzb_cancelled;
+static PyThreadState* p_py_main_threadstate;
 
 /**
- * init_module
- *	  does the one-time python init needed by this plugin
- */   
-static void init_module(const std::string& script_path)
-{
-	// promote the python SO to RTLD_GLOBAL so symbols can
-	// properly resolved for python loaded SO modules
-	dlclose(dlopen(PYLIB_NAME, RTLD_NOW|RTLD_GLOBAL|RTLD_NOLOAD));
-
-	if(!ptr_pymodule)
-	{
-		// init types
-		GnzbPyObject::init_type();
-
-		// allocate the gnzb module
-		ptr_pymodule.reset(new GNzbPyModule);
-	}
-}
-
-/**
- * finalize_module
- *	  does the python cleanup needed when this plugin is unloaded
- */   
-static void finalize_module()
-{
-	if(ptr_pymodule)
-		ptr_pymodule.reset();
-}
-
-/**
- * init_module
- *	  capture the script's GNzb event callables and call it on_load
- *	  if it is defined  
+ *
  */
-static void init_module(PyObject *p_module)
-{
-	// the dictionary instnace is "borrowed" (see python docs for explaination of this silliness)
-	PyObject *pDict = PyModule_GetDict(p_module);
-
-	// get the scripting event handlers from the module
-	gnzb_added = PyDict_GetItemString(pDict, "nzb_added");
-	gnzb_finished = PyDict_GetItemString(pDict, "nzb_finished");
-	gnzb_cancelled = PyDict_GetItemString(pDict, "nzb_cancelled");
-
-	// if the script provided on on_load entry point then call it
-	Py::Callable on_load;
-	on_load = PyDict_GetItemString(pDict, "on_load");
-	try
-	{
-		if(on_load.isCallable())
-		{
-			Py::TupleN args;
-			on_load.apply(args);
-		}
-	}
-	catch(const std::exception& e)
-	{
-#ifdef DEBUG
-		std::cout << PACKAGE " load_module: error in module's on_load - " << e.what() << std::endl;
-#endif /* DEBUG */
-	}
-	catch(...)
-	{
-#ifdef DEBUG
-		std::cout << PACKAGE" load_module: unknown error in module's on_load" << std::endl;
-#endif /* DEBUG */
-	}
-}
-
-/**
- * load_module
- *	  ASSUMES that Py_Initialize has been previously called.
- *
- *	  sets python to add the directory of the given path to
- *    list of locations for loading modules and then loads
- *	  the module given in module_path into the interpreter.
- *
- *  module_path - The fully qualified path to the python script
- *
- *  returns false for any python call falures, true otherwise
- */
-static bool load_module(const std::string& module_path)
-{
-	bool result = false;
-
-	// check for last path separator
-	unsigned int pos = module_path.find_last_of('/');
-
-	// parse out the module name from the path, it
-	// is the file name part less the extension
-	std::string module_name = (pos == std::string::npos)
-		? module_path
-		: module_path.substr(pos + 1);
-	pos = module_name.find_last_of('.');
-	if(pos != std::string::npos)
-		module_name.erase(pos);
-
-#ifdef DEBUG
-	std::cout << PACKAGE " load_module: module name is " << module_name << std::endl;
-#endif  /* DEBUG */
-
-	std::wstring wmodule_path(module_path.begin(), module_path.end());
-
-	// copy the entire path into our argv area
-	wcsncpy(py_progname, wmodule_path.c_str(), PATH_MAX_);
-
-	PyEval_RestoreThread(p_py_main_threadstate);
-
-	// set the argv for python
-	PySys_SetArgv(1, py_argv);
-	try
-	{
-		// load the given module
-		PyObject *pModule = PyImport_ImportModule(module_name.c_str());
-		if(pModule == 0)
-			PyErr_Print();
-		else
-		{
-			init_module(pModule);
-
-			// Clean up module reference
-			Py_DECREF(pModule);
-		}
-	}
-	catch(const std::exception& e)
-	{
-	#ifdef DEBUG
-		std::cout << PACKAGE " load_module: error - " << e.what() << std::endl;
-	#endif /* DEBUG */
-		result = false;
-	}
-	catch(...)
-	{
-	#ifdef DEBUG
-		std::cout << PACKAGE " load_module: unknown error type" << std::endl;
-	#endif /* DEBUG */
-		result = false;
-	}
-
-	p_py_main_threadstate = PyEval_SaveThread();
-
-	return result;
-}
-
 class GnzbPyThreadLock
 {
 public:
@@ -204,10 +51,7 @@ public:
 		PyEval_RestoreThread(m_thread_state);
 	}
 
-	~GnzbPyThreadLock()
-	{
-		unlock();
-	}
+	~GnzbPyThreadLock() { unlock(); }
 
 	void unlock()
 	{
@@ -223,19 +67,15 @@ private:
 	PyThreadState* m_thread_state{nullptr};
 };
 
-static void run_event_handler(std::shared_ptr<GNzb> ptr_gnzb, Py::Callable& handler)
+static void run_event_handler(std::shared_ptr<GNzb> ptr_gnzb, PyObject *p_callable)
 {
+	if(nullptr == p_callable) return;
+
 	try
 	{
 		GnzbPyThreadLock py_thread_guard(p_py_main_threadstate->interp);
 
-		// as it turns out allocating the GnzbPyObject on
-		// the stack won't work becuase TupleN destruction
-		// is causing a delete call on GnzbPyObject, even if
-		// it's not heap allocated
-		GnzbPyObject *p_py_gnzb = new GnzbPyObject(ptr_gnzb);
-		Py::TupleN args(p_py_gnzb->self());
-		handler.apply(args);
+		PyObject_CallFunction(p_callable, nullptr);
 
 		py_thread_guard.unlock();
 	}
@@ -254,20 +94,141 @@ static void run_event_handler(std::shared_ptr<GNzb> ptr_gnzb, Py::Callable& hand
 }
 
 /**
+ *
+ *
+ */
+class Py3Plugin : public GNzbPlugin
+{
+public:
+
+	Py3Plugin() {}
+	~Py3Plugin() {}
+
+public:
+
+	bool init(const std::string& path);
+
+	void on_gnzb_added(const std::shared_ptr<GNzb>& ptr_gnzb);
+	void on_gnzb_finished(const std::shared_ptr<GNzb>& ptr_gnzb);
+	void on_gnzb_cancelled(const std::shared_ptr<GNzb>& ptr_gnzb);
+
+private:
+
+	// script event handlers (borrowed refs)
+	PyObject *mp_gnzb_added{nullptr};
+	PyObject *mp_gnzb_finished{nullptr};
+	PyObject *mp_gnzb_cancelled{nullptr};	
+};
+
+bool Py3Plugin::init(const std::string& path)
+{
+	bool result = true;
+
+	// parse the path and module info from the given path
+	PySourceFile source_info(path);
+
+#ifdef DEBUG
+	std::cout << PACKAGE " load_module: module name is " << source_info.get_module() << std::endl;
+#endif  /* DEBUG */
+
+	PyEval_RestoreThread(p_py_main_threadstate);
+
+	// add the path of the script file to the module load path
+	PyObject *sys_path = PySys_GetObject("path");
+	PyObject *module_path = PyUnicode_FromString(source_info.get_path().c_str());
+	PyList_Append(sys_path, module_path);
+
+	// load the given module
+	PyObject *p_module = PyImport_ImportModule(source_info.get_module().c_str());
+	if(p_module == 0)
+		PyErr_Print();
+	else
+	{
+		try
+		{
+			// the dictionary instanace is "borrowed"
+			PyObject *pDict = PyModule_GetDict(p_module);
+
+			// get the event handlers
+			mp_gnzb_added = PyDict_GetItemString(pDict, "nzb_added");
+			mp_gnzb_finished = PyDict_GetItemString(pDict, "nzb_finished");
+			mp_gnzb_cancelled =PyDict_GetItemString(pDict, "nzb_cancelled");
+
+			// if the script provided on on_load entry point then call it
+			PyObject* p_on_load = PyDict_GetItemString(pDict, "on_load");
+
+			// get any declared gnzb event handlers
+			if(PyCallable_Check(p_on_load))
+				 PyObject_CallFunction(p_on_load, nullptr);
+
+			// Clean up module reference
+			Py_DECREF(p_module);
+		}
+		catch(const std::exception& e)
+		{
+	#ifdef DEBUG
+			std::cout << PACKAGE " init_module: error in module's on_load - " << e.what() << std::endl;
+	#endif /* DEBUG */
+			result = false;
+		}
+		catch(...)
+		{
+	#ifdef DEBUG
+			std::cout << PACKAGE " init_module: unknown error in module's on_load" << std::endl;
+	#endif /* DEBUG */
+			result = false;
+		}
+	}
+
+	p_py_main_threadstate = PyEval_SaveThread();
+
+	return result;
+}
+
+void Py3Plugin::on_gnzb_added(const std::shared_ptr<GNzb>& ptr_gnzb)
+{
+	if(PyCallable_Check(mp_gnzb_added))
+	{
+		std::thread handler_thread{run_event_handler, ptr_gnzb, mp_gnzb_added};
+		handler_thread.detach();
+	}
+}
+
+void Py3Plugin::on_gnzb_finished(const std::shared_ptr<GNzb>& ptr_gnzb)
+{
+	if(PyCallable_Check(mp_gnzb_finished))
+	{
+		std::thread handler_thread{run_event_handler, ptr_gnzb, mp_gnzb_finished};
+		handler_thread.detach();
+	}
+}
+
+void Py3Plugin::on_gnzb_cancelled(const std::shared_ptr<GNzb>& ptr_gnzb)
+{
+	if(PyCallable_Check(mp_gnzb_cancelled))
+	{
+		std::thread handler_thread{run_event_handler, ptr_gnzb, mp_gnzb_cancelled};
+		handler_thread.detach();
+	}
+}
+
+/**
  * plugin_load
  *	  gnzb plugins have this called when they are loaded by the gnzb app
  */   
 extern "C" void plugin_load()
 {
+	// load the python intrepert SO
+	dlopen(PYLIB_NAME, RTLD_NOW|RTLD_GLOBAL);
+
 	// initialize the python library if needed
 	if(!Py_IsInitialized())
 	{
+		PyImport_AppendInittab("gnzbapp", PyInit_gnzbapp);
+
 		// initialize python
 		Py_Initialize();
 		PyEval_InitThreads();
-
-		// init the gnzb module
-		init_module("gnzbhandler");
 
 		// access the main thread state
 		p_py_main_threadstate = PyGILState_GetThisThreadState();
@@ -285,9 +246,6 @@ extern "C" void plugin_load()
  */   
 extern "C" void plugin_unload()
 {
-	// clean up the allocated module instance
-	finalize_module();
-
 	// finialize the python library if needed
 	if(Py_IsInitialized())
 	{
@@ -304,50 +262,22 @@ extern "C" void plugin_unload()
 #endif  /* DEBUG */
 }
 
-/**
- * script_plugin_init
- *	  gnzb script plugins have this called for initialization based on the script file
- */   
-extern "C" bool script_plugin_init(const std::string& script_path)
+extern "C"
 {
-	return load_module(script_path);
+
+static GNzbPlugin *allocate_plugin()
+{
+	return new Py3Plugin;
 }
 
-/**
- * Called by gnzb when an NZB is opened
- *
- */
-extern "C" void on_gnzb_added(const std::shared_ptr<GNzb>& ptr_gnzb)
+GNzbPluginDescriptor plugin_descriptor =
 {
-	if(gnzb_added.isCallable())
-	{
-		std::thread handler_thread{run_event_handler, ptr_gnzb, std::ref(gnzb_added)};
-		handler_thread.detach();
-	}
-}
+	GNZB_PLUGIN_API_VERSION,
 
-/**
- * Called by gnzb when an NZB is finished downloading
- *
- */
-extern "C" void on_gnzb_finished(const std::shared_ptr<GNzb>& ptr_gnzb)
-{
-	if(gnzb_finished.isCallable())
-	{
-		std::thread handler_thread{run_event_handler, ptr_gnzb, std::ref(gnzb_finished)};
-		handler_thread.detach();
-	}
-}
+	plugin_load,
+	plugin_unload,
 
-/**
- * Called by gnzb when an NZB is cancelled
- *
- */
-extern "C" void on_gnzb_cancelled(const std::shared_ptr<GNzb>& ptr_gnzb)
-{
-	if(gnzb_cancelled.isCallable())
-	{
-		std::thread handler_thread{run_event_handler, ptr_gnzb, std::ref(gnzb_cancelled)};
-		handler_thread.detach();
-	}
-}
+	allocate_plugin
+};
+
+};

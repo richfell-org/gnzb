@@ -21,6 +21,7 @@
 #include "runtimesettings.h"
 #include "db/preferences.h"
 #include "db/gnzbdb.h"
+#include <sigc++/signal.h>
 
 namespace RuntimeSettings {
 
@@ -47,6 +48,9 @@ Locations& Locations::load(const AppPreferences& prefs)
 			m_moveto_path.push_back('/');
 	}
 
+	// emit changed signal
+	signal_changed()();
+
 	return *this;
 }
 
@@ -56,6 +60,14 @@ public:
 
 	LocationsImpl() : Locations() {}
 	~LocationsImpl() {}
+
+	sigc::signal<void>& signal_changed() { return m_signal_changed; };
+	const sigc::signal<void>& signal_changed() const { return m_signal_changed; }
+
+private:
+
+	sigc::signal<void> m_signal_changed;
+
 } locations_impl;
 
 Locations& locations() { return locations_impl; }
@@ -80,6 +92,9 @@ Notifications& Notifications::load(const AppPreferences& prefs)
 	if(mb_sound_queue_finished)
 		m_sound_queuefinished = prefs.getQueueFinishSound();
 
+	// emit changed signal
+	signal_changed()();
+
 	return *this;
 }
 
@@ -89,6 +104,14 @@ public:
 
 	NotificationsImpl() {}
 	~NotificationsImpl() {}
+
+	sigc::signal<void>& signal_changed() { return m_signal_changed; };
+	const sigc::signal<void>& signal_changed() const { return m_signal_changed; }
+	
+private:
+
+	sigc::signal<void> m_signal_changed;
+	
 } notifications_impl;
 
 Notifications& notifications() { return notifications_impl; }
@@ -99,6 +122,7 @@ Scripting::Scripting()
 
 Scripting& Scripting::load(const AppPreferences& prefs)
 {
+	// load from the database
 	mb_enabled = prefs.getScriptingEnabled();
 	mb_nzb_added = prefs.getRunScriptOnNzbAdded();
 	mb_nzb_finished = prefs.getRunScriptOnNzbFinished();
@@ -114,6 +138,9 @@ Scripting& Scripting::load(const AppPreferences& prefs)
 	if(prefs.getRunScriptOnNzbCancelled())
 		m_script_cancelled = prefs.getNzbCancelledScript();
 
+	// emit changed signal
+	signal_changed()();
+
 	return *this;
 }
 
@@ -123,6 +150,14 @@ public:
 
 	ScriptingImpl() {}
 	~ScriptingImpl() {}
+
+	sigc::signal<void>& signal_changed() { return m_signal_changed; };
+	const sigc::signal<void>& signal_changed() const { return m_signal_changed; }
+
+private:
+
+	sigc::signal<void> m_signal_changed;
+	
 } scripting_impl;
 
 Scripting& scripting() { return scripting_impl; }

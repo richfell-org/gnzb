@@ -21,6 +21,7 @@
 #define __RUNTIME_SETTINGS_HEADER__
 
 #include <string>
+#include <sigc++/signal.h>
 
 // forward references
 //class Notifier;
@@ -54,6 +55,9 @@ public:
 	const std::string& base_output_path() const { return m_base_path; }
 	const std::string& moveto_path() const		{ return m_moveto_path; }
 
+	virtual sigc::signal<void>& signal_changed() = 0;
+	virtual const sigc::signal<void>& signal_changed() const = 0;
+
 // operations
 public:
 
@@ -86,6 +90,9 @@ public:
 	bool sound_on_queue_finished() const				{ return mb_sound_queue_finished; }
 	const std::string& gnzb_finished_sound() const		{ return m_sound_nzbfinished; }
 	const std::string& queue_finished_sound() const		{ return m_sound_queuefinished; }
+
+	virtual sigc::signal<void>& signal_changed() = 0;
+	virtual const sigc::signal<void>& signal_changed() const = 0;
 
 // operations
 public:
@@ -124,6 +131,9 @@ public:
 	const std::string& script_on_nzb_added() const		{ return m_script_added; }
 	const std::string& script_on_nzb_finished() const   { return m_script_finished; }
 	const std::string& script_on_nzb_cancelled() const  { return m_script_cancelled; }
+
+	virtual sigc::signal<void>& signal_changed() = 0;
+	virtual const sigc::signal<void>& signal_changed() const = 0;
 
 // operations
 public:

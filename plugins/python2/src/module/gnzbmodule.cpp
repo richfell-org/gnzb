@@ -17,36 +17,38 @@
 	to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 	Boston, MA 02110-1301 USA.
 */
+#include <Python.h>
 #include "gnzbmodule.h"
+#include <vector>
 #include <runtimesettings.h>
 
-GNzbPyModule::GNzbPyModule()
-:   Py::ExtensionModule<GNzbPyModule>("gnzbapp")
+PyObject *gnzbmod_download_dir(PyObject *self, PyObject *args)
 {
-	add_varargs_method("download_dir", &GNzbPyModule::download_dir, "string( s ) = return string");
-	add_varargs_method("has_moveto_dir", &GNzbPyModule::has_moveto_dir, "string( s ) = return string");
-	add_varargs_method("moveto_dir", &GNzbPyModule::moveto_dir, "string( s ) = return string");
-
-	initialize("gnzb python2 module");
+	std::string path = RuntimeSettings::locations().base_output_path();
+	return Py_BuildValue("s", path.c_str());
 }
 
-GNzbPyModule::~GNzbPyModule()
+PyObject *gnzbmod_has_moveto_dir(PyObject *self, PyObject *args)
 {
+	int is_moveto = RuntimeSettings::locations().move_completed() ? 1 : 0;
+	return Py_BuildValue("i", is_moveto);
 }
 
-Py::Object GNzbPyModule::download_dir(const Py::Tuple &args)
+PyObject *gnzbmod_moveto_dir(PyObject *self, PyObject *args)
 {
-	std::string result = RuntimeSettings::locations().base_output_path();
-	return Py::String(result);
+	std::string path = RuntimeSettings::locations().moveto_path();
+	return Py_BuildValue("s", path.c_str());
 }
 
-Py::Object GNzbPyModule::has_moveto_dir(const Py::Tuple &args)
+static std::vector<PyMethodDef> gnzbmod_py_methods{
+	{ "download_dir", gnzbmod_download_dir, METH_VARARGS, "" },
+	{ "has_moveto_dir", gnzbmod_has_moveto_dir, METH_VARARGS, "" },
+	{ "moveto_dir", gnzbmod_moveto_dir, METH_VARARGS, "" },
+	{ nullptr, nullptr, 0, nullptr } /* Sentinel */
+};
+
+void init_gnzb_module()
 {
-	return Py::Int(RuntimeSettings::locations().move_completed() ? 1 : 0);
+	Py_InitModule3("gnzbapp", &gnzbmod_py_methods[0], "gnzb app module");
 }
 
-Py::Object GNzbPyModule::moveto_dir(const Py::Tuple &args)
-{
-	std::string result = RuntimeSettings::locations().moveto_path();
-	return Py::String(result);
-}

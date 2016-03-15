@@ -1,5 +1,5 @@
 /*
-	gnzb python2 DSO plugin - gnzb python2 integration
+	gnzb python3 DSO plugin - gnzb python3 integration
 
     Copyright (C) 2016  Richard J. Fellinger, Jr
 
@@ -20,5 +20,45 @@
 #ifndef __UTIL_HEADER__
 #define __UTIL_HEADER__
 
+#include <memory>
+#include <string>
+
+#ifndef PyObject_HEAD
+struct _object;
+typedef _object PyObject;
+#endif
+
+struct python_delete
+{
+	void operator ()(PyObject *p_o);
+};
+
+using py_ptr = std::unique_ptr<PyObject, python_delete>;
+
+/**
+ *
+ */
+class PySourceFile
+{
+public:
+
+	PySourceFile();
+	PySourceFile(const std::string& source_path);
+	~PySourceFile();
+
+public:
+
+	const std::string& get_path() const		{ return m_path; }
+	const std::string& get_file() const		{ return m_file; }
+	const std::string& get_module() const   { return m_module; }
+
+public:
+
+	void parse_from_path(const std::string& source_path);
+
+private:
+
+	std::string m_path, m_file, m_module;
+};
 
 #endif  /* __UTIL_HEADER__ */

@@ -20,6 +20,7 @@
 #ifndef __PLUGIN_MODULE_HEADER__
 #define __PLUGIN_MODULE_HEADER__
 
+#include "gnzbplugin.h"
 #include <memory>
 #include <string>
 
@@ -43,6 +44,11 @@ public:
 	// the path of the loaded module
 	const std::string& path() const { return m_path; }
 
+	// non-owner access to the GNzbPlugin instace which
+	// is allocated by the loaded module's allocate function
+	GNzbPlugin *plugin() { return m_ptr_plugin.get(); }
+	const GNzbPlugin *plugin() const { return m_ptr_plugin.get(); }
+
 // operations
 public:
 
@@ -58,6 +64,8 @@ public:
 	PluginModule& operator =(PluginModule&&);
 	PluginModule& operator =(const PluginModule&) = delete;
 
+	operator bool() const { return is_loaded() && m_ptr_plugin; }
+
 // implementation
 protected:
 
@@ -65,15 +73,19 @@ protected:
 
 private:
 
-	// plugin load/unload entry points
-	void (*m_plugin_load)();
-	void (*m_plugin_unload)();
-
 	// module path
 	std::string m_path;
 
 	// handle to module
 	std::unique_ptr<void, int(*)(void*)> m_ptr_handle;
+
+	// module's plugin descriptor, this is not allocated
+	// memory but rather a pointer to a symbol from the
+	// loaded shared object
+	GNzbPluginDescriptor *mp_plugin_desc{nullptr};
+
+	// plugin instance
+	std::unique_ptr<GNzbPlugin> m_ptr_plugin; 
 };
 
 #endif  /* __PLUGIN_MODULE_HEADER__ */

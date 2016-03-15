@@ -1,5 +1,5 @@
 /*
-	gnzb python3 DSO plugin - gnzb python3 integration
+	gnzb python2 DSO plugin - gnzb python2 integration
 
     Copyright (C) 2016  Richard J. Fellinger, Jr
 

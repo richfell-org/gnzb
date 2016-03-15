@@ -71,7 +71,6 @@ gnzb_SOURCES = \
 	db/preferences.cpp \
 	db/gnzbgroups.cpp \
 	plugin/pluginmodule.cpp \
-	plugin/scriptplugin.cpp \
 	uiresources.c
 
 gnzb_LDFLAGS = $(GNZB_LDFLAGS)

@@ -20,27 +20,11 @@
 #ifndef __GNZB_MODULE_HEADER__
 #define __GNZB_MODULE_HEADER__
 
-#include <CXX/Objects.hxx>
-#include <CXX/Extensions.hxx>
+#ifndef PyObject_HEAD
+struct _object;
+typedef _object PyObject;
+#endif
 
-class GNzbPyModule : public Py::ExtensionModule<GNzbPyModule>
-{
-// construction/destruction
-public:
-
-	GNzbPyModule();
-	~GNzbPyModule();
-
-public:
-
-	// gnzb settings access
-	Py::Object download_dir(const Py::Tuple &args);
-	Py::Object has_moveto_dir(const Py::Tuple &args);
-	Py::Object moveto_dir(const Py::Tuple &args);
-
-// implementation
-private:
-
-};
+extern "C" PyObject *PyInit_gnzbapp();
 
 #endif  /* __GNZB_MODULE_HEADER__ */

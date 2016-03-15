@@ -70,6 +70,9 @@ void PrefsScriptsInterface::init(const AppPreferences& app_prefs, Glib::RefPtr<G
 	else
 		mpComboPythonVersion->set_active_id(cur_module);
 
+	// python version changes mark dirty
+	mpComboPythonVersion->signal_changed().connect([this](){ set_modified(true); });
+
 	// set sensitivity for the current state
 	onScriptingEnabledChanged();
 

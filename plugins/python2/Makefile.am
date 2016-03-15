@@ -17,5 +17,3 @@ libtool: $(LIBTOOL_DEPS)
 # Remove doc directory on uninstall
 uninstall-local:
 	-rm -r $(gnzbpy2docdir)
-
-

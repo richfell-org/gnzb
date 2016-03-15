@@ -21,7 +21,6 @@
 #define __GNZB_PYTHON_OBJECT_HEADER__
 
 #include <memory>
-#include <CXX/Extensions.hxx>
 
 class GNzb;
 
@@ -29,7 +28,7 @@ class GNzb;
  *
  *
  */
-class GnzbPyObject : public Py::PythonExtension<GnzbPyObject>
+class GnzbPyObject
 {
 public:
 
@@ -40,14 +39,6 @@ public:
 
 // attributes
 public:
-
-	// paths
-	Py::Object path(const Py::Tuple &args);
-	Py::Object output_path(const Py::Tuple &args);
-
-	// download state
-	Py::Object is_download_complete(const Py::Tuple &args);
-	Py::Object fraction_download_complete(const Py::Tuple &args);
 
 private:
 
