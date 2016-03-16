@@ -17,7 +17,7 @@ libgnzbpy3_la_SOURCES = \
 libgnzbpy3_la_CFLAGS = $(GNZBPY3_CFLAGS) $(PYTHON_CFLAGS) $(AM_CFLAGS)
 libgnzbpy3_la_CXXFLAGS = $(GNZBPY3_CXXFLAGS) $(PYTHON_CFLAGS) $(AM_CXXFLAGS)
 
-## libgnzbpy3_la_LIBADD = 
+libgnzbpy3_la_LIBADD = $(PYTHON_LIBS) 
 
 ## libgnzbpy3_la_LDFLAGS = -version-info @LIBVER_INFO@ $(PTHREAD_LIBS)
 libgnzbpy3_la_LDFLAGS = -module -avoid-version $(PTHREAD_LIBS)

@@ -46,7 +46,10 @@ void PySourceFile::parse_from_path(const std::string& source_path)
 	// if no path separator found then just file name
 	// else parse out path and file name
 	if(pos == std::string::npos)
+	{
+		m_path.clear();
 		m_file = source_path;
+	}
 	else
 	{
 		m_path = source_path.substr(0, pos);

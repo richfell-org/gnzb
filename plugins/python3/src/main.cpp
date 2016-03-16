@@ -38,6 +38,17 @@
 // global python main thread state
 static PyThreadState* p_py_main_threadstate;
 
+#ifdef DEBUG
+std::ostream& operator <<(std::ostream& out, const PySourceFile& sf)
+{
+	out
+		<< "Path: " << sf.get_path() << std::endl
+		<< "File: " << sf.get_file() << std::endl
+		<< "Module: " << sf.get_module();
+	return out;
+}
+#endif
+
 /**
  *
  */
@@ -128,7 +139,7 @@ bool Py3Plugin::init(const std::string& path)
 	PySourceFile source_info(path);
 
 #ifdef DEBUG
-	std::cout << PACKAGE " load_module: module name is " << source_info.get_module() << std::endl;
+	std::cout << PACKAGE " script info:" << std::endl << source_info << std::endl;
 #endif  /* DEBUG */
 
 	PyEval_RestoreThread(p_py_main_threadstate);
@@ -219,7 +230,7 @@ void Py3Plugin::on_gnzb_cancelled(const std::shared_ptr<GNzb>& ptr_gnzb)
 extern "C" void plugin_load()
 {
 	// load the python intrepert SO
-	dlopen(PYLIB_NAME, RTLD_NOW|RTLD_GLOBAL);
+	//dlopen(PYLIB_NAME, RTLD_NOW|RTLD_GLOBAL);
 
 	// initialize the python library if needed
 	if(!Py_IsInitialized())
