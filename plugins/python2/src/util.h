@@ -28,12 +28,14 @@ struct _object;
 typedef _object PyObject;
 #endif
 
+#if 0
 struct python_delete
 {
 	void operator ()(PyObject *p_o);
 };
 
 using py_ptr = std::unique_ptr<PyObject, python_delete>;
+#endif
 
 /**
  *

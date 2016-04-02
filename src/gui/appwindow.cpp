@@ -458,9 +458,15 @@ void GNzbApplicationWindow::on_pause_all()
 			else
 				module_path.append("python3/src/.libs/libgnzbpy3.so");
 
+			// load the module and initialize
 			plugin_module.load(module_path);
-			if(plugin_module)
-				plugin_module.plugin()->init(script_path);
+			if(!plugin_module)
+				show_error(*this, Glib::ustring("Failed to load the module"));
+			else if(!plugin_module.plugin()->init(script_path))
+			{
+				show_error(*this, Glib::ustring("Module initialization failed"));
+				plugin_module.unload();
+			}
 		}
 		else
 		{

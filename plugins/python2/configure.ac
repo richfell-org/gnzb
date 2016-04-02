@@ -16,11 +16,10 @@ LT_INIT([disable-static])
 AC_SUBST([LIBTOOL_DEPS])
 AC_SUBST(LIBVER_INFO, [1:0:0])
 
-dnl define string for the python lib name
+dnl parse out the python lib name as needed for name are to dlopen
 AC_DEFINE_UNQUOTED(PYLIB_NAME, [`echo $PYTHON_LIBS | sed -e 's/-l//' -e 's/\(.*\)/"lib\1.so"/'`], [python library name])
 
 AC_OUTPUT([
 Makefile
 src/Makefile
 ])
-

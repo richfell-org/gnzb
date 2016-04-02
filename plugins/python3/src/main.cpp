@@ -20,11 +20,13 @@
 #include <Python.h>
 #include <memory>
 #include <thread>
-#include "module/gnzbmodule.h"
-//#include "pyobject/gnzbpyobject.h"
+#include <runtimesettings.h>
 #include <gnzb.h>
 #include <plugin/gnzbplugin.h>
+#include <pythontypes.h>
+#include <pythonmodule.h>
 #include <dlfcn.h>
+#include "pygnzb.h"
 #include "util.h"
 
 #include "../config.h"
@@ -78,15 +80,13 @@ private:
 	PyThreadState* m_thread_state{nullptr};
 };
 
-static void run_event_handler(std::shared_ptr<GNzb> ptr_gnzb, PyObject *p_callable)
+static void run_event_handler(std::shared_ptr<GNzb> ptr_gnzb, PyWrap::Object& callable)
 {
-	if(nullptr == p_callable) return;
-
 	try
 	{
 		GnzbPyThreadLock py_thread_guard(p_py_main_threadstate->interp);
 
-		PyObject_CallFunction(p_callable, nullptr);
+		callable.invoke(PyGNzb(ptr_gnzb));
 
 		py_thread_guard.unlock();
 	}
@@ -108,7 +108,7 @@ static void run_event_handler(std::shared_ptr<GNzb> ptr_gnzb, PyObject *p_callab
  *
  *
  */
-class Py3Plugin : public GNzbPlugin
+class Py3Plugin : public GNzbPlugin, public PyWrap::ExtensionModule
 {
 public:
 
@@ -125,100 +125,124 @@ public:
 
 private:
 
+	PyWrap::Object download_dir()
+	{
+		return PyWrap::Unicode(RuntimeSettings::locations().base_output_path());
+	}
+
+	PyWrap::Object has_moveto_dir()
+	{
+		return PyWrap::Long((RuntimeSettings::locations().move_completed() ? 1 : 0));
+	}
+
+	PyWrap::Object moveto_dir()
+	{
+		
+		return PyWrap::Unicode(RuntimeSettings::locations().moveto_path());
+	}
+
+	// the loaded script module
+	PyWrap::Module m_script_module;
+
 	// script event handlers (borrowed refs)
-	PyObject *mp_gnzb_added{nullptr};
-	PyObject *mp_gnzb_finished{nullptr};
-	PyObject *mp_gnzb_cancelled{nullptr};	
+	PyWrap::Object m_gnzb_added;
+	PyWrap::Object m_gnzb_finished;
+	PyWrap::Object m_gnzb_cancelled;
 };
 
 bool Py3Plugin::init(const std::string& path)
 {
-	bool result = true;
+	bool result = false;
 
-	// parse the path and module info from the given path
-	PySourceFile source_info(path);
+	//PyEval_RestoreThread(p_py_main_threadstate);
+	GnzbPyThreadLock thread_guard(p_py_main_threadstate->interp);
+
+	try
+	{
+		// set up the module methods
+		add_method("download_dir", &Py3Plugin::download_dir, "The NZB content download directory");
+		add_method("has_moveto_dir", &Py3Plugin::has_moveto_dir, "Indicator for NZB content to be moved after complete download");
+		add_method("moveto_dir", &Py3Plugin::moveto_dir, "The directory to which download complete NZB content is moved");
+
+		// register the module and extension objects
+		if(init_module("gnzbapp", "The gnzb application module"))
+		{
+			// static init extention types
+			PyGNzb::init_type(*this);
+
+			// parse the path and module info from the given path
+			PySourceFile source_info(path);
 
 #ifdef DEBUG
-	std::cout << PACKAGE " script info:" << std::endl << source_info << std::endl;
+			std::cout << PACKAGE " script info:" << std::endl << source_info << std::endl;
 #endif  /* DEBUG */
 
-	PyEval_RestoreThread(p_py_main_threadstate);
+			// add the path of the script file to the module load path
+			PyWrap::Unicode stript_dir(source_info.get_path());
+			PyWrap::List sys_path_list = PyWrap::Sys::get_object("path");
+			if(sys_path_list.count(stript_dir) == 0)
+				sys_path_list.append_item(stript_dir);
 
-	// add the path of the script file to the module load path
-	PyObject *sys_path = PySys_GetObject("path");
-	PyObject *module_path = PyUnicode_FromString(source_info.get_path().c_str());
-	PyList_Append(sys_path, module_path);
+			// load the given module
+			m_script_module = PyWrap::Module::import(source_info.get_module());
 
-	// load the given module
-	PyObject *p_module = PyImport_ImportModule(source_info.get_module().c_str());
-	if(p_module == 0)
-		PyErr_Print();
-	else
-	{
-		try
-		{
 			// the dictionary instanace is "borrowed"
-			PyObject *pDict = PyModule_GetDict(p_module);
+			PyWrap::Dict dict = m_script_module.dict();
 
 			// get the event handlers
-			mp_gnzb_added = PyDict_GetItemString(pDict, "nzb_added");
-			mp_gnzb_finished = PyDict_GetItemString(pDict, "nzb_finished");
-			mp_gnzb_cancelled =PyDict_GetItemString(pDict, "nzb_cancelled");
+			m_gnzb_added = dict.get_item<PyWrap::Object>("nzb_added");
+			m_gnzb_finished = dict.get_item<PyWrap::Object>("nzb_finished");
+			m_gnzb_cancelled = dict.get_item<PyWrap::Object>("nzb_cancelled");
 
 			// if the script provided on on_load entry point then call it
-			PyObject* p_on_load = PyDict_GetItemString(pDict, "on_load");
+			PyWrap::Object on_load = dict.get_item<PyWrap::Object>("on_load");
+			if(on_load && on_load.is_callable())
+				on_load.invoke();
 
-			// get any declared gnzb event handlers
-			if(PyCallable_Check(p_on_load))
-				 PyObject_CallFunction(p_on_load, nullptr);
-
-			// Clean up module reference
-			Py_DECREF(p_module);
-		}
-		catch(const std::exception& e)
-		{
-	#ifdef DEBUG
-			std::cout << PACKAGE " init_module: error in module's on_load - " << e.what() << std::endl;
-	#endif /* DEBUG */
-			result = false;
-		}
-		catch(...)
-		{
-	#ifdef DEBUG
-			std::cout << PACKAGE " init_module: unknown error in module's on_load" << std::endl;
-	#endif /* DEBUG */
-			result = false;
+			result = true;
 		}
 	}
-
-	p_py_main_threadstate = PyEval_SaveThread();
+	catch(const std::exception& e)
+	{
+#ifdef DEBUG
+		std::cout << PACKAGE " init_module: error plugin init - " << e.what() << std::endl;
+#endif /* DEBUG */
+		result = false;
+	}
+	catch(...)
+	{
+#ifdef DEBUG
+		std::cout << PACKAGE " init_module: unknown error in plugin init" << std::endl;
+#endif /* DEBUG */
+		result = false;
+	}
 
 	return result;
 }
 
 void Py3Plugin::on_gnzb_added(const std::shared_ptr<GNzb>& ptr_gnzb)
 {
-	if(PyCallable_Check(mp_gnzb_added))
+	if(m_gnzb_added && m_gnzb_added.is_callable())
 	{
-		std::thread handler_thread{run_event_handler, ptr_gnzb, mp_gnzb_added};
+		std::thread handler_thread{run_event_handler, ptr_gnzb, std::ref(m_gnzb_added)};
 		handler_thread.detach();
 	}
 }
 
 void Py3Plugin::on_gnzb_finished(const std::shared_ptr<GNzb>& ptr_gnzb)
 {
-	if(PyCallable_Check(mp_gnzb_finished))
+	if(m_gnzb_finished && m_gnzb_finished.is_callable())
 	{
-		std::thread handler_thread{run_event_handler, ptr_gnzb, mp_gnzb_finished};
+		std::thread handler_thread{run_event_handler, ptr_gnzb, std::ref(m_gnzb_finished)};
 		handler_thread.detach();
 	}
 }
 
 void Py3Plugin::on_gnzb_cancelled(const std::shared_ptr<GNzb>& ptr_gnzb)
 {
-	if(PyCallable_Check(mp_gnzb_cancelled))
+	if(m_gnzb_cancelled && m_gnzb_cancelled.is_callable())
 	{
-		std::thread handler_thread{run_event_handler, ptr_gnzb, mp_gnzb_cancelled};
+		std::thread handler_thread{run_event_handler, ptr_gnzb, std::ref(m_gnzb_cancelled)};
 		handler_thread.detach();
 	}
 }
@@ -235,7 +259,7 @@ extern "C" void plugin_load()
 	// initialize the python library if needed
 	if(!Py_IsInitialized())
 	{
-		PyImport_AppendInittab("gnzbapp", PyInit_gnzbapp);
+		//PyImport_AppendInittab("gnzbapp", PyInit_gnzbapp);
 
 		// initialize python
 		Py_Initialize();

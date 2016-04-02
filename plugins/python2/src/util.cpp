@@ -20,10 +20,10 @@
 #include <Python.h>
 #include "util.h"
 
-void python_delete::operator ()(PyObject *p_o)
-{
-	Py_DECREF(p_o);
-}
+//void python_delete::operator ()(PyObject *p_o)
+//{
+//	Py_DECREF(p_o);
+//}
 
 PySourceFile::PySourceFile()
 {
