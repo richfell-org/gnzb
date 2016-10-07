@@ -22,8 +22,18 @@
 BulletPointRenderer::BulletPointRenderer()
 :   Glib::ObjectBase("bulletpointrenderer"),
 	Gtk::CellRenderer(),
-	m_prop_color(*this, "color")
+	m_prop_color(*this, "color"),
+	//m_highlight(Cairo::RadialGradient::create(0.45, 0.45, 0.1, 0.5, 0.5, 0.5))
+	m_highlight()
 {
+	Cairo::RefPtr<Cairo::RadialGradient> refGradient(Cairo::RadialGradient::create(0.45, 0.45, 0.1, 0.5, 0.5, 0.5));
+	refGradient->add_color_stop_rgba(0, 1, 1, 1, 0.2);
+	refGradient->add_color_stop_rgba(1, 0, 0, 0, 0.3);
+	m_highlight = Cairo::RefPtr<const Cairo::Pattern>::cast_dynamic(refGradient);
+
+	// set the color stops on the highlight radial pattern
+	//m_highlight->add_color_stop_rgba(0, 1, 1, 1, 0.2);
+	//m_highlight->add_color_stop_rgba(1, 0, 0, 0, 0.3);
 }
 
 BulletPointRenderer::~BulletPointRenderer()
@@ -79,7 +89,7 @@ void BulletPointRenderer::render_vfunc(
 	if(property_cell_background_set())
 	{
 		Gdk::RGBA color = property_cell_background_rgba();
-		cr->begin_new_sub_path();
+		//cr->begin_new_sub_path();
 		cr->set_source_rgba(color.get_red(), color.get_green(), color.get_blue(), color.get_alpha());
 		cr->rectangle(
 			background_area.get_x(), background_area.get_y(),
@@ -118,12 +128,16 @@ void BulletPointRenderer::render_vfunc(
 	cr->arc(0.5, 0.5, 0.40, 0.0, 2 * M_PI);
 	cr->fill();
 
+	//int exception_count = 0;
+
 	// shading accent
 	cr->begin_new_sub_path();
-	Cairo::RefPtr<Cairo::RadialGradient> refRadial = Cairo::RadialGradient::create(0.45, 0.45, 0.1, 0.5, 0.5, 0.5);
-	refRadial->add_color_stop_rgba(0, 1, 1, 1, 0.2);
-	refRadial->add_color_stop_rgba(1, 0, 0, 0, 0.3);
-	cr->set_source(refRadial);
-	cr->arc(0.5, 0.5, 0.4, 0, 2 * M_PI);
-	cr->fill();
+	cr->set_source(m_highlight);
+	cr->arc(0.5, 0.5, 0.4, 0.0, 2 * M_PI);
+	try { cr->fill(); }
+	catch(...)
+	{
+		//++exception_count;
+		throw;
+	}
 }

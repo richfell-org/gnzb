@@ -39,6 +39,7 @@ AM_CONDITIONAL([PLUGIN_PY3], [test "x$enable_plugin_py3" == "xyes"])
 
 dnl we need to export the app's symbols if a plugin is enabled
 dnl because the plugins use symbols defined in the app
+
 AS_IF(
 	[test "x$enable_plugin_py3" == "xyes" -o "x$enable_plugin_py2" == "xyes"],
 	[

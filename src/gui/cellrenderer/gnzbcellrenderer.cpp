@@ -215,7 +215,7 @@ void GNzbCellRenderer::render_vfunc(
 	const Gdk::Rectangle& cell_area,
 	Gtk::CellRendererState flags)
 {
-	cr->save();
+	//cr->save();
 
 	// paint the background if necessary
 	if(property_cell_background_set())
@@ -238,10 +238,10 @@ void GNzbCellRenderer::render_vfunc(
 		cell_area.get_width(), area_height);
 
 	// render the bullet
-	cr->save();
 	const int bullet_width = m_bullet_renderer.property_width() + (2 * m_bullet_renderer.property_xpad());
 	Gdk::Rectangle bullet_area(upper_area.get_x(), upper_area.get_y(), bullet_width, upper_area.get_height());
-	m_bullet_renderer.property_color() = Gdk::RGBA(m_prop_bullet_rgba_text);
+	m_bullet_renderer.property_color() = Gdk::RGBA(m_prop_bullet_rgba_text.get_value());
+	cr->save();
 	m_bullet_renderer.render(cr, widget, bullet_area, bullet_area, flags);
 	cr->restore();
 
@@ -283,7 +283,7 @@ void GNzbCellRenderer::render_vfunc(
 	m_status_renderer.property_xalign() = 1.0;
 	m_status_renderer.render(cr, widget, status_area, status_area, flags);
 
-	cr->restore();
+	//cr->restore();
 }
 
 // class helper function

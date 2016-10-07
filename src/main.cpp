@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 		// library init
 		if(!Glib::thread_supported())
 			Glib::thread_init();
-		//gdk_threads_init();
+		gdk_threads_init();
 		Gst::init_check();
 
 		// configure sqlite3
@@ -114,18 +114,21 @@ int main(int argc, char *argv[])
 	catch(const Glib::Error& e)
 	{
 		NntpFetch::stop_server_pools();
+		std::cerr << argv[0] << ": error - " << e.what() << std::endl;
 		Gtk::MessageDialog err_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
 		err_dialog.run();
 	}
 	catch(const std::exception& e)
 	{
 		NntpFetch::stop_server_pools();
+		std::cerr << argv[0] << ": error - " << e.what() << std::endl;
 		Gtk::MessageDialog err_dialog(e.what(), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
 		err_dialog.run();
 	}
 	catch(...)
 	{
 		NntpFetch::stop_server_pools();
+		std::cerr << argv[0] << ": unknown error" << std::endl;
 		Gtk::MessageDialog err_dialog("Unknown error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
 		err_dialog.run();
 	}

@@ -1054,6 +1054,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="margin_left">18</property>
+                        <property name="margin_right">18</property>
                         <property name="margin_top">18</property>
                         <property name="resize_mode">immediate</property>
                         <property name="label_xalign">0</property>

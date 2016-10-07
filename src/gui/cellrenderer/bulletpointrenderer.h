@@ -20,6 +20,7 @@
 #ifndef __BULLET_POINT_RENDERER_HEADER__
 #define __BULLET_POINT_RENDERER_HEADER__
 
+#include <cairomm/refptr.h>
 #include <glibmm/property.h>
 #include <glibmm/propertyproxy.h>
 #include <gdkmm/rgba.h>
@@ -67,6 +68,10 @@ protected:
 
 	// the bullet color
 	Glib::Property<Gdk::RGBA> m_prop_color;
+
+	// the highlight radial
+	//Cairo::RefPtr<Cairo::RadialGradient> m_highlight;
+	Cairo::RefPtr<const Cairo::Pattern> m_highlight;
 };
 
 #endif  /* __BULLET_POINT_RENDERER_HEADER__ */

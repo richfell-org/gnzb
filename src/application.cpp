@@ -18,6 +18,7 @@
 	Boston, MA 02110-1301 USA.
 */
 #include <vector>
+#include <gtkmm/settings.h>
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/aboutdialog.h>
 #include "application.h"
@@ -48,10 +49,10 @@ Glib::RefPtr<GNzbApplication> GNzbApplication::get_instance()
  * by the one unique instance.
  */
 GNzbApplication::GNzbApplication()
-:	Gtk::Application("org.richfell.gnzb", Gio::APPLICATION_HANDLES_OPEN),
-	Glib::ObjectBase("gnzbapplication")
+:	Glib::ObjectBase("gnzbapplication"),
+	Gtk::Application(Glib::ustring("org.richfell.gnzb"), Gio::APPLICATION_HANDLES_OPEN)
 {
-	if(!is_registered())
+//	if(!is_registered())
 		register_application();
 }
 
@@ -120,9 +121,10 @@ void GNzbApplication::allocate_main_window()
 void GNzbApplication::on_startup()
 {
 	Gtk::Application::on_startup();
+	create_actions();
+	Gtk::Settings::get_default()->property_gtk_shell_shows_app_menu() = true;
 	create_app_menu();
 	create_menubar();
-	create_actions();
 }
 
 /**
@@ -131,7 +133,7 @@ void GNzbApplication::on_startup()
  */
 void GNzbApplication::on_activate()
 {
-	Gtk::Application::on_activate();
+	//Gtk::Application::on_activate();
 	allocate_main_window();
 	m_ptr_mainwin->set_visible();
 }
