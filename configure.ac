@@ -9,7 +9,7 @@ AX_CXX_COMPILE_STDCXX(14, [noext], [mandatory])
 dnl AC_SEARCH_LIBS([dlopen], [dl dld], [], [AC_MSG_ERROR([unable to find the dlopen() function])])
 AC_SEARCH_LIBS([dlsym], [dl dld], [], [AC_MSG_ERROR([unable to find the dlsym() function])])
 AC_SEARCH_LIBS([dlclose], [dl dld], [], [AC_MSG_ERROR([unable to find the dlclose() function])])
-PKG_CHECK_MODULES(GNZB, [gtkmm-3.0 gstreamermm-0.10 libnotify libusenet])
+PKG_CHECK_MODULES(GNZB, [gtkmm-3.0 gstreamermm-1.0 libnotify libusenet])
 
 dnl optional plugin for python2
 AC_ARG_ENABLE([plugin-py2],

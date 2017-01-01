@@ -28,7 +28,7 @@
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/application.h>
 #include <gtkmm/main.h>
-#include <gstreamermm/playbin2.h>
+#include <gstreamermm/playbin.h>
 
 void set_widget(Gtk::Widget& w, const Glib::RefPtr<Gtk::Builder>& ref_builder, const char *parent_name)
 {
@@ -102,15 +102,15 @@ Glib::RefPtr<Gio::Icon> get_icon_for_name(const std::string& name)
 	return Gio::content_type_get_icon(mime_type);
 }
 
-// PlayBin2 instance for sound notifications
-static Glib::RefPtr<Gst::PlayBin2> ref_playbin(nullptr);
+// PlayBin instance for sound notifications
+static Glib::RefPtr<Gst::PlayBin> ref_playbin(nullptr);
 
 void play_sound(const std::string& path)
 {
 	if(!path.empty())
 	{
 		if(!ref_playbin)
-			ref_playbin = Gst::PlayBin2::create();
+			ref_playbin = Gst::PlayBin::create();
 		else
 			ref_playbin->set_state(Gst::STATE_READY);
 		ref_playbin->property_uri() = "file://" + path;
