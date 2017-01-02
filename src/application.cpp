@@ -66,6 +66,8 @@ GNzbApplication::~GNzbApplication()
  */
 void GNzbApplication::allocate_main_window()
 {
+	std::cout << "GNzbApplication::allocate_main_window" << std::endl;
+
 	try
 	{
 		// load the main UI definition resource
@@ -120,6 +122,8 @@ void GNzbApplication::allocate_main_window()
  */
 void GNzbApplication::on_startup()
 {
+	std::cout << "GNzbApplication::on_startup" << std::endl;
+
 	Gtk::Application::on_startup();
 	create_actions();
 	Gtk::Settings::get_default()->property_gtk_shell_shows_app_menu() = true;
@@ -133,6 +137,8 @@ void GNzbApplication::on_startup()
  */
 void GNzbApplication::on_activate()
 {
+	std::cout << "GNzbApplication::on_activate" << std::endl;
+
 	//Gtk::Application::on_activate();
 	allocate_main_window();
 	m_ptr_mainwin->set_visible();
@@ -145,6 +151,8 @@ void GNzbApplication::on_activate()
  */
 void GNzbApplication::on_open_file(const type_vec_files& files, const Glib::ustring& hint)
 {
+	std::cout << "GNzbApplication::on_open_file" << std::endl;
+
 	if(!m_ptr_mainwin)
 	{
 		allocate_main_window();

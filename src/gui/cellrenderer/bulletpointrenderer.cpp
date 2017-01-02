@@ -131,13 +131,13 @@ void BulletPointRenderer::render_vfunc(
 	//int exception_count = 0;
 
 	// shading accent
-	cr->begin_new_sub_path();
-	cr->set_source(m_highlight);
-	cr->arc(0.5, 0.5, 0.4, 0.0, 2 * M_PI);
-	try { cr->fill(); }
-	catch(...)
-	{
+	//cr->begin_new_sub_path();
+	//cr->set_source(m_highlight);
+	//cr->arc(0.5, 0.5, 0.4, 0.0, 2 * M_PI);
+	//try { cr->fill(); }
+	//catch(...)
+	//{
 		//++exception_count;
-		throw;
-	}
+	//	throw;
+	//}
 }
