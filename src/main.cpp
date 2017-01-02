@@ -87,7 +87,6 @@ int main(int argc, char *argv[])
 		// library init
 		if(!Glib::thread_supported())
 			Glib::thread_init();
-		gdk_threads_init();
 		Gst::init_check();
 
 		// configure sqlite3
