@@ -17,7 +17,8 @@
 	to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 	Boston, MA 02110-1301 USA.
 */
-#ifndef __NNTP_FETCH_HEADER__
+#ifndef NNTP_FETCH_HEADER__
+#define NNTP_FETCH_HEADER__
 
 #include <vector>
 #include <list>
@@ -138,4 +139,4 @@ void stop_server_pools();
 
 }   // namespace NntpFetch
 
-#endif  /* __NNTP_FETCH_HEADER__ */
+#endif  /* NNTP_FETCH_HEADER__ */

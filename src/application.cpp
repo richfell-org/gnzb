@@ -21,6 +21,7 @@
 #include <gtkmm/settings.h>
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/aboutdialog.h>
+#include <gstreamermm/init.h>
 #include "application.h"
 #include "uiresource.h"
 #include "runtimesettings.h"
@@ -32,8 +33,55 @@
 #include "gui/nzbliststore.h"
 #include "gui/menus/menuactions.h"
 #include "gui/preferences/preferencesinterface.h"
+#include "util/sysutil.h"
+#include "db/gnzbdb.h"
+#include "db/preferences.h"
+#include "nntp/fetch.h"
 
 #include <iostream>
+
+bool create_default_appdb(const char *appdb_path);
+
+/**
+ * 
+ */
+static bool startup_check()
+{
+	std::string db_filename = get_app_db_filename();
+	if(!does_file_exist(db_filename.c_str()))
+		if(!create_default_appdb(db_filename.c_str()))
+			return false;
+
+	return true;
+}
+
+static void init_settings()
+{
+	try
+	{
+		AppPreferences prefs;
+		RuntimeSettings::locations().load(prefs);
+		RuntimeSettings::notifications().load(prefs);
+		RuntimeSettings::scripting().load(prefs);
+	}
+	catch(const Sqlite3::Error& e)
+	{
+		std::cerr << "init_settings: " << e.what() << std::endl;
+	}
+}
+
+static void init_fetch_pools()
+{
+	try
+	{
+		AppPreferences prefs;
+		NntpFetch::update_server_pools(prefs.get_nntp_servers());
+	}
+	catch(const Sqlite3::Error& e)
+	{
+		std::cerr << "init_fetch_pools: " << e.what() << std::endl;
+	}
+}
 
 Glib::RefPtr<GNzbApplication> GNzbApplication::get_instance()
 {
@@ -52,8 +100,7 @@ GNzbApplication::GNzbApplication()
 :	Glib::ObjectBase("gnzbapplication"),
 	Gtk::Application(Glib::ustring("org.richfell.gnzb"), Gio::APPLICATION_HANDLES_OPEN)
 {
-//	if(!is_registered())
-		register_application();
+	register_application();
 }
 
 GNzbApplication::~GNzbApplication()
@@ -70,6 +117,11 @@ void GNzbApplication::allocate_main_window()
 
 	try
 	{
+		create_actions();
+		Gtk::Settings::get_default()->property_gtk_shell_shows_app_menu() = true;
+		create_app_menu();
+		create_menubar();
+
 		// load the main UI definition resource
 		Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create_from_resource(UiResourcePath("gui/mainwin.ui"));
 
@@ -122,13 +174,14 @@ void GNzbApplication::allocate_main_window()
  */
 void GNzbApplication::on_startup()
 {
-	std::cout << "GNzbApplication::on_startup" << std::endl;
+	if(!startup_check())
+		quit();
 
 	Gtk::Application::on_startup();
-	create_actions();
-	Gtk::Settings::get_default()->property_gtk_shell_shows_app_menu() = true;
-	create_app_menu();
-	create_menubar();
+
+	init_settings();
+	init_fetch_pools();
+	Gst::init_check();
 }
 
 /**
@@ -137,8 +190,6 @@ void GNzbApplication::on_startup()
  */
 void GNzbApplication::on_activate()
 {
-	std::cout << "GNzbApplication::on_activate" << std::endl;
-
 	//Gtk::Application::on_activate();
 	allocate_main_window();
 	m_ptr_mainwin->set_visible();
@@ -149,10 +200,8 @@ void GNzbApplication::on_activate()
  * some non-option command line arguments.  The
  * arguments are considered to be file names.
  */
-void GNzbApplication::on_open_file(const type_vec_files& files, const Glib::ustring& hint)
+void GNzbApplication::on_open(const type_vec_files& files, const Glib::ustring& hint)
 {
-	std::cout << "GNzbApplication::on_open_file" << std::endl;
-
 	if(!m_ptr_mainwin)
 	{
 		allocate_main_window();

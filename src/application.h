@@ -73,7 +73,7 @@ protected:
 	// overrides
 	void on_startup();
 	void on_activate();
-	void on_open_file(const type_vec_files& files, const Glib::ustring& hint);
+	void on_open(const type_vec_files& files, const Glib::ustring& hint);
 
 	// action handlers
 	void on_help_about();
