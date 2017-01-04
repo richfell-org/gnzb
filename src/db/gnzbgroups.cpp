@@ -289,6 +289,7 @@ GNzbGroup& GNzbGroup::operator =(GNzbGroup&& that)
 	mSizeMax = that.mSizeMax;
 
 	that.m_rec_id = -1;
+	return *this;
 }
 
 GNzbGroup& GNzbGroup::operator =(const GNzbGroup& that)
@@ -306,6 +307,7 @@ GNzbGroup& GNzbGroup::operator =(const GNzbGroup& that)
 	mAutoAssignExc = that.mAutoAssignExc;
 	mSizeMin = that.mSizeMin;
 	mSizeMax = that.mSizeMax;
+	return *this;
 }
 
 GNzbGroups::GNzbGroups()

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.19.0 -->
+<!-- Generated with glade 3.20.0 -->
 <interface>
-  <requires lib="gtk+" version="3.10"/>
+  <requires lib="gtk+" version="3.12"/>
   <object class="GtkListStore" id="liststore1">
     <columns>
       <!-- column-name Title -->
@@ -87,11 +87,11 @@
                   <object class="GtkLabel" id="label1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="halign">start</property>
                     <property name="margin_left">25</property>
                     <property name="margin_top">3</property>
                     <property name="label" translatable="yes">&lt;span font_weight="bold" font_size="large"&gt;Preferences&lt;/span&gt;</property>
                     <property name="use_markup">True</property>
-                    <property name="xalign">0</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -103,11 +103,11 @@
                   <object class="GtkLabel" id="label14">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="halign">start</property>
                     <property name="margin_left">7</property>
                     <property name="margin_top">7</property>
                     <property name="margin_bottom">7</property>
                     <property name="label" translatable="yes">Customize the behavior of the application</property>
-                    <property name="xalign">0</property>
                     <attributes>
                       <attribute name="weight" value="semibold"/>
                     </attributes>
@@ -241,15 +241,17 @@
                           <object class="GtkGrid" id="grid1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="margin_top">16</property>
+                            <property name="margin_left">6</property>
+                            <property name="margin_right">6</property>
+                            <property name="margin_top">6</property>
                             <property name="column_spacing">12</property>
                             <child>
                               <object class="GtkLabel" id="label8">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="halign">end</property>
                                 <property name="label" translatable="yes">Server URL</property>
                                 <property name="justify">right</property>
-                                <property name="xalign">1</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                 </attributes>
@@ -263,9 +265,9 @@
                               <object class="GtkLabel" id="label9">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="halign">end</property>
                                 <property name="label" translatable="yes">Port</property>
                                 <property name="justify">right</property>
-                                <property name="xalign">1</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                 </attributes>
@@ -279,9 +281,9 @@
                               <object class="GtkLabel" id="label10">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="halign">end</property>
                                 <property name="label" translatable="yes">Username</property>
                                 <property name="justify">right</property>
-                                <property name="xalign">1</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                 </attributes>
@@ -308,9 +310,9 @@
                               <object class="GtkLabel" id="label11">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="halign">end</property>
                                 <property name="label" translatable="yes">Password</property>
                                 <property name="justify">right</property>
-                                <property name="xalign">1</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                 </attributes>
@@ -339,9 +341,9 @@
                               <object class="GtkLabel" id="label12">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="halign">end</property>
                                 <property name="label" translatable="yes">Connections</property>
                                 <property name="justify">right</property>
-                                <property name="xalign">1</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
                                 </attributes>
@@ -411,8 +413,8 @@
                                   <object class="GtkImage" id="preferences.nntpserverstatus.img">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="xpad">1</property>
-                                    <property name="ypad">1</property>
+                                    <property name="halign">start</property>
+                                    <property name="hexpand">True</property>
                                     <property name="stock">gtk-delete</property>
                                   </object>
                                   <packing>

@@ -330,8 +330,8 @@ bool GNzbApplication::on_download_progress()
 			m_ptr_active_gnzb.reset();
 
 			// sound?
-			//if(RuntimeSettings::notifications().sound_on_queue_finished())
-			//	play_sound(RuntimeSettings::notifications().queue_finished_sound());
+			if(RuntimeSettings::notifications().sound_on_queue_finished())
+				play_sound(RuntimeSettings::notifications().queue_finished_sound());
 		}
 	}
 	// else not complete yet

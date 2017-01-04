@@ -22,8 +22,8 @@
 #include "../util/recttools.h"
 
 NzbTreeView::NzbTreeView()
-:	Gtk::TreeView(),
-	Glib::ObjectBase("nzbtreeview"),
+:	Glib::ObjectBase("nzbtreeview"),
+	Gtk::TreeView(),
 	m_view_col("NZB"),
 	m_renderer_nzb(14)
 {
@@ -39,8 +39,8 @@ NzbTreeView::NzbTreeView()
 }
 
 NzbTreeView::NzbTreeView(GtkTreeView *p_object, const Glib::RefPtr<Gtk::Builder>& ref_builder)
-:	Gtk::TreeView(p_object),
-	Glib::ObjectBase("nzbtreeview"),
+:	Glib::ObjectBase("nzbtreeview"),
+	Gtk::TreeView(p_object),
 	m_view_col("NZB"),
 	m_renderer_nzb(14)
 {

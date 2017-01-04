@@ -51,8 +51,8 @@ NzbTreeModelColumnRecord::~NzbTreeModelColumnRecord()
 /* NzbListStore ****************************************************************/
 
 NzbListStore::NzbListStore()
-:   Gtk::ListStore(),
-	Glib::ObjectBase("nzbliststrore")
+:   Glib::ObjectBase("nzbliststrore"),
+	Gtk::ListStore()
 {
 	set_column_types(m_cols);
 }

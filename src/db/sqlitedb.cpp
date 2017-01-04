@@ -112,6 +112,7 @@ throw(Error)
 Db& Db::operator =(Db&& that)
 {
 	mPtrDb = std::move(that.mPtrDb);
+	return *this;
 }
 
 Stmt::Stmt()

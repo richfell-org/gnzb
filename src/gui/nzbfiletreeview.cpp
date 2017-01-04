@@ -22,8 +22,8 @@
 #include <gtkmm/builder.h>
 
 NzbFileTreeView::NzbFileTreeView()
-:   Gtk::TreeView(),
-	Glib::ObjectBase("nzbfiletreeview"),
+:   Glib::ObjectBase("nzbfiletreeview"),
+	Gtk::TreeView(),
 	m_column("NZB File"),
 	m_nzbfile_renderer()
 {
@@ -31,8 +31,8 @@ NzbFileTreeView::NzbFileTreeView()
 }
 
 NzbFileTreeView::NzbFileTreeView(GtkTreeView *p_object, const Glib::RefPtr<Gtk::Builder>& ref_builder)
-:   Gtk::TreeView(p_object),
-	Glib::ObjectBase("nzbfiletreeview"),
+:   Glib::ObjectBase("nzbfiletreeview"),
+	Gtk::TreeView(p_object),
 	m_column("NZB File"),
 	m_nzbfile_renderer()
 {

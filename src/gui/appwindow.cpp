@@ -47,8 +47,8 @@
 #include "../runtimesettings.h"
 
 GNzbApplicationWindow::GNzbApplicationWindow(GtkApplicationWindow *p_object, const Glib::RefPtr<Gtk::Builder>& ref_builder)
-:	Gtk::ApplicationWindow(p_object),
-	Glib::ObjectBase("gnzbapplicationwindow"),
+:	Glib::ObjectBase("gnzbapplicationwindow"),
+	Gtk::ApplicationWindow(p_object),
 	mp_toolbar(get_managed_widget_derived<GNzbToolbar>(ref_builder, "gnzb.toolbar")),
 	mp_nzb_stack(get_managed_widget<Gtk::Stack>(ref_builder, "gnzb.view.stack")),
 	mp_files_stack(get_managed_widget<Gtk::Stack>(ref_builder, "gnzb.files.treeview.stack")),

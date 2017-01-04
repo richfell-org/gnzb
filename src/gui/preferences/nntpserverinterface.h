@@ -21,6 +21,10 @@
 #define __NNTP_SERVER_INTERFACE_HEADER__
 
 #include <vector>
+#include <thread>
+#include <future>
+#include <sigc++/connection.h>
+#include <glibmm/dispatcher.h>
 #include "preferencespage.h"
 #include "../../db/preferences.h"
 
@@ -77,12 +81,22 @@ protected:
 	std::vector<PrefsNntpServer> m_servers;
 	std::vector<EditState> m_server_editstate;
 
+	// UI widgets
 	Gtk::TreeView *p_server_treeview;
 	Gtk::Entry *p_entry_url, *p_entry_port, *p_entry_username, *p_entry_password, *p_entry_conncount;
 	Gtk::Entry *p_entry_retention, *p_entry_volume, *p_entry_used_volume;
 	Gtk::Image *p_image_status;
 	Gtk::ToggleButton *p_toggle_usessl, *p_toggle_volume_warn, *p_toggle_volume_reset_monthly;
 	Gtk::Button *p_btn_addserver, *p_btn_removeserver, *p_btn_volume_reset;
+
+	// timeout callback items for NNTP setting check
+	Glib::Dispatcher m_check_dispatch;
+	std::future<bool> m_server_check_future;
+	std::thread m_server_check_thread;
+	sigc::connection m_to_conn;
+	PrefsNntpServer const * get_selected_server();
+	void on_check_complete();
+	bool on_settings_changed_timeout();
 };
 
 #endif  /* __NNTP_SERVER_INTERFACE_HEADER__ */

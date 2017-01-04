@@ -75,6 +75,7 @@
 		<file>icons/filetype/24x24/zip.png</file>
 		<file>icons/preferences/credentials-passed.png</file>
 		<file>icons/preferences/credentials-failed.png</file>
+		<file>icons/preferences/wait-spinner-sm.gif</file>
 		<file>icons/actions/delete.png</file>
 		<file>icons/actions/delete-pressed.png</file>
 		<file>icons/actions/finished.png</file>

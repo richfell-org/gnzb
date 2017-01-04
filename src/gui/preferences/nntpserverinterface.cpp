@@ -18,7 +18,12 @@
 	Boston, MA 02110-1301 USA.
 */
 #include "nntpserverinterface.h"
+#include <memory>
+#include <future>
+#include <atomic>
+#include <exception>
 #include <glibmm/ustring.h>
+#include <glibmm/main.h>
 #include <gtkmm/builder.h>
 #include <gtkmm/button.h>
 #include <gtkmm/entry.h>
@@ -27,9 +32,48 @@
 #include <gtkmm/treeview.h>
 #include <gtkmm/messagedialog.h>
 #include <libusenet/options.h>
+#include <libusenet/nntpclient.h>
 #include "widgets/nntpserverliststore.h"
 #include "../guiutil.h"
 #include "../../uiresource.h"
+
+#define SERVER_CHANGE_TO	2000
+#define ATTR_CHANGE_TO		3000
+
+static std::atomic_bool s_cancel_check{false};
+
+/**
+ * Funtion which can run in a thread to check NNTP server
+ * settings and credentials.
+ */
+static void check_credentials(
+	NntpClient::ServerAddr nntpserver,
+	bool use_ssl,
+	std::promise<bool> barrier,
+	Glib::Dispatcher& dispatcher)
+{
+	NntpClient::Response response;
+	try
+	{
+		std::unique_ptr<NntpClient::Connection> ptr_conn = use_ssl
+			? std::make_unique<NntpClient::SslConnection>()
+			: std::make_unique<NntpClient::Connection>();
+		ptr_conn->set_timeout(20);
+		ptr_conn->open(nntpserver, response);
+		barrier.set_value(response.get_status() == NntpClient::ResponseStatus::CMD_OK);
+	}
+	catch(const std::exception& e)
+	{
+		barrier.set_value(false);
+	}
+	catch(...)
+	{
+		barrier.set_value(false);
+	}
+
+	if(!s_cancel_check.load())
+		dispatcher();
+}
 
 NntpServerInterface::NntpServerInterface()
 :	p_server_treeview(nullptr),
@@ -49,10 +93,13 @@ NntpServerInterface::NntpServerInterface()
 	p_btn_removeserver(nullptr),
 	p_btn_volume_reset(nullptr)
 {
+	s_cancel_check.store(false);
 }
 
 NntpServerInterface::~NntpServerInterface()
 {
+	m_to_conn.disconnect();
+	s_cancel_check.store(true);
 }
 
 void NntpServerInterface::init(const AppPreferences& app_prefs, Glib::RefPtr<Gtk::Builder>& ref_builder)
@@ -146,6 +193,8 @@ void NntpServerInterface::init(const AppPreferences& app_prefs, Glib::RefPtr<Gtk
 
 	// start in unmodified state
 	set_modified(false);
+
+	m_check_dispatch.connect(sigc::mem_fun(*this, &NntpServerInterface::on_check_complete));
 }
 
 void NntpServerInterface::save(AppPreferences& app_prefs)
@@ -216,6 +265,10 @@ void NntpServerInterface::on_option_changed(Gtk::ToggleButton *pToggle)
 	Glib::RefPtr<NntpServerListStore> ref_model
 		= Glib::RefPtr<NntpServerListStore>::cast_dynamic(p_server_treeview->get_model());
 
+	// cancel any current timeout
+	if(m_to_conn.connected())
+		m_to_conn.disconnect();
+
 	if(0 < p_server_treeview->get_selection()->count_selected_rows())
 	{
 		Gtk::TreeIter sel_iter = p_server_treeview->get_selection()->get_selected();
@@ -227,6 +280,10 @@ void NntpServerInterface::on_option_changed(Gtk::ToggleButton *pToggle)
 			m_server_editstate[server_idx] = EditState::DIRTY;
 
 		set_modified();
+
+		// set a timeout for running the server check
+		m_to_conn = Glib::signal_timeout().connect(
+			sigc::mem_fun(*this, &NntpServerInterface::on_settings_changed_timeout), ATTR_CHANGE_TO);
 	}
 }
 
@@ -234,6 +291,10 @@ void NntpServerInterface::on_server_selection()
 {
 	Glib::RefPtr<NntpServerListStore> ref_model
 		= Glib::RefPtr<NntpServerListStore>::cast_dynamic(p_server_treeview->get_model());
+
+	// cancel any current timeout
+	if(m_to_conn.connected())
+		m_to_conn.disconnect();
 
 	// no selection?
 	if(0 == p_server_treeview->get_selection()->count_selected_rows())
@@ -269,11 +330,20 @@ void NntpServerInterface::on_server_selection()
 		p_entry_password->set_sensitive();
 		p_entry_conncount->set_text(Glib::ustring::compose("%1", pServerEntry->getConnectionCount()));
 		p_entry_conncount->set_sensitive();
+
+		// set a timeout for running the server check
+		m_to_conn = Glib::signal_timeout().connect(
+			sigc::mem_fun(*this, &NntpServerInterface::on_settings_changed_timeout), SERVER_CHANGE_TO);
 	}
 }
 
 void NntpServerInterface::on_remove()
 {
+	// cancel any current timeout
+	const bool was_checking = m_to_conn.connected();
+	if(was_checking)
+		m_to_conn.disconnect();
+
 	if(0 < p_server_treeview->get_selection()->count_selected_rows())
 	{
 		Glib::RefPtr<NntpServerListStore> ref_model
@@ -288,7 +358,15 @@ void NntpServerInterface::on_remove()
 
 		// make sure the user want to delete the server
 		if(Gtk::RESPONSE_NO == get_yes_or_no(*(Gtk::Window*)p_server_treeview->get_toplevel(), "Delete Selected Server?", make_sure_msg))
+		{
+			// re-issue server check if needed
+			if(was_checking)
+			{
+				m_to_conn = Glib::signal_timeout().connect(
+					sigc::mem_fun(*this, &NntpServerInterface::on_settings_changed_timeout), SERVER_CHANGE_TO);
+			}
 			return;
+		}
 
 		ref_model->erase(sel_iter);
 		m_server_editstate[server_idx] = EditState::DELETED;
@@ -343,6 +421,75 @@ bool NntpServerInterface::on_key_release(_GdkEventKey* p_event, Gtk::Widget *pWi
 			m_server_editstate[server_idx] = EditState::DIRTY;
 
 		set_modified();
+
+		// set the timeout for server/credential checking
+		if(pWidget != p_entry_conncount)
+		{
+			if(m_to_conn.connected()) m_to_conn.disconnect();
+
+			m_to_conn = Glib::signal_timeout().connect(
+				sigc::mem_fun(*this, &NntpServerInterface::on_settings_changed_timeout), ATTR_CHANGE_TO);
+		}
+	}
+
+	return false;
+}
+
+PrefsNntpServer const *NntpServerInterface::get_selected_server()
+{
+	// check for a selection in the NNTP server list box
+	if(0 == p_server_treeview->get_selection()->count_selected_rows())
+		throw std::runtime_error("No NNTP server selected");
+
+	Glib::RefPtr<NntpServerListStore> ref_model
+		= Glib::RefPtr<NntpServerListStore>::cast_dynamic(p_server_treeview->get_model());
+	Gtk::TreeIter selIter = p_server_treeview->get_selection()->get_selected();
+	int server_idx = (*selIter)[ref_model->columns().col_entry_idx()];
+	return &m_servers[server_idx];
+}
+
+static NntpClient::ServerAddr to_serveraddr(PrefsNntpServer const *p_prefs_server)
+{
+	return NntpClient::ServerAddr(
+		p_prefs_server->getUrl().c_str(),
+		p_prefs_server->getUsername().c_str(),
+		p_prefs_server->getPassword().c_str(),
+		p_prefs_server->getPort().c_str());
+}
+
+void NntpServerInterface::on_check_complete()
+{
+	m_server_check_future.wait();
+	if(m_server_check_future.get())
+		p_image_status->set_from_resource(ImageResourcePath("icons/preferences/credentials-passed.png"));
+	else
+		p_image_status->set_from_resource(ImageResourcePath("icons/preferences/credentials-failed.png"));
+}
+
+/**
+ * The handler for timeouts on settings changes.  This will
+ * attempt to connect to the currently selected NNTP server,
+ * using any given credentials, and the results will be indicated
+ * using the status icon.
+ */
+bool NntpServerInterface::on_settings_changed_timeout()
+{
+	m_to_conn.disconnect();
+
+	try
+	{
+		PrefsNntpServer const *p_prefs_server = get_selected_server();
+		NntpClient::ServerAddr server = to_serveraddr(p_prefs_server);
+
+		std::promise<bool> barrier;
+		m_server_check_future = barrier.get_future();
+		p_image_status->set_from_resource(ImageResourcePath("icons/preferences/wait-spinner-sm.gif"));
+		m_server_check_thread = std::thread(check_credentials, server, p_prefs_server->useSsl(), std::move(barrier), std::ref(m_check_dispatch));
+		m_server_check_thread.detach();
+	}
+	catch(const std::exception& e)
+	{
+		p_image_status->set_from_resource(ImageResourcePath("icons/preferences/credentials-failed.png"));
 	}
 
 	return false;

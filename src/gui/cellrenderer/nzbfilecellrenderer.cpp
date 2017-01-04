@@ -25,8 +25,8 @@
 #include <cstdio>
 
 NzbFileCellRenderer::NzbFileCellRenderer()
-:   Gtk::CellRenderer(),
-	Glib::ObjectBase("nzbfilecellrenderer"),
+:   Glib::ObjectBase("nzbfilecellrenderer"),
+	Gtk::CellRenderer(),
 	m_prop_file_tuple(*this, "file_tuple"),
 	m_prop_name(*this, "name"),
 	m_prop_margin(*this, "margin", 0)
