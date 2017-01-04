@@ -1,6 +1,11 @@
 A GUI tool for using NZB files to download content from usenet.
 
+
 Requires:
 
+C++ compilier supporting c++14
+gtkmm-3.0
+gstreamermm-1.0
+libnotify
 libusenet - https://github.com/richfell-org/libusenet
 
