@@ -1,0 +1,6 @@
+A GUI tool for using NZB files to download content from usenet.
+
+Requires:
+
+libusenet - https://github.com/richfell-org/libusenet
+
