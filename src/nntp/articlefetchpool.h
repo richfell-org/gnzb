@@ -25,7 +25,7 @@
 #include <memory>
 #include <thread>
 #include <libusenet/nntpclient.h>
-#include "../msgqueue.h"
+#include "../movequeue.h"
 #include "../db/preferences.h"
 #include "fetchmsg.h"
 
@@ -57,7 +57,7 @@ public:
 // operations
 public:
 
-	void start(MsgQueue<NntpFetch::Msg>& msg_queue);
+	void start(MoveQueue<NntpFetch::Msg>& msg_queue);
 	void abort();
 	void stop();
 
@@ -67,7 +67,7 @@ public:
 // implementation
 protected:
 
-	void start_fetch_tasks(MsgQueue<NntpFetch::Msg>& msg_queue);
+	void start_fetch_tasks(MoveQueue<NntpFetch::Msg>& msg_queue);
 
 	// NNTP server data structures
 	PrefsNntpServer m_prefs_nntp_server;

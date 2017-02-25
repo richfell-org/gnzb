@@ -62,7 +62,7 @@ static int openOutputFile(const char *path, size_t size)
 	return result;
 }
 
-ArticleTask::ArticleTask(NntpClient::ServerAddr& nntpServer, MsgQueue<NntpFetch::Msg>& msg_queue)
+ArticleTask::ArticleTask(NntpClient::ServerAddr& nntpServer, MoveQueue<NntpFetch::Msg>& msg_queue)
 :   mServer(nntpServer),
 	m_msg_queue(msg_queue),
 	mb_quit(false),

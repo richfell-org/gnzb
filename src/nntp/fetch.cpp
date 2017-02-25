@@ -20,23 +20,25 @@
 #include <glibmm/ustring.h>
 #include "fetch.h"
 #include "articlefetchpool.h"
-#include "../msgqueue.h"
+#include "../movequeue.h"
 #include "../db/preferences.h"
 #include "fetchmsg.h"
 
 namespace NntpFetch {
 
 // article fetch message queue
-MsgQueue<Msg> segment_queue;
+MoveQueue<Msg> segment_queue;
 
 void push_message(GNzb *p_gnzb, int i_file)
 {
-	segment_queue.insert(Msg(p_gnzb, i_file));
+	//segment_queue.insert(Msg(p_gnzb, i_file));
+	segment_queue.emplace(p_gnzb, i_file);
 }
 
 void push_message(GNzb *p_gnzb, int i_file, int i_segment)
 {
-	segment_queue.insert(Msg(p_gnzb, i_file, i_segment));
+	//segment_queue.insert(Msg(p_gnzb, i_file, i_segment));
+	segment_queue.emplace(p_gnzb, i_file, i_segment);
 }
 
 void clear_message_queue()

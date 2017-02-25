@@ -46,7 +46,7 @@ ArticlePool::~ArticlePool()
 {
 }
 
-void ArticlePool::start(MsgQueue<NntpFetch::Msg>& msg_queue)
+void ArticlePool::start(MoveQueue<NntpFetch::Msg>& msg_queue)
 {
 	start_fetch_tasks(msg_queue);
 }
@@ -125,7 +125,7 @@ bool ArticlePool::hasActive() const
 	return false;
 }
 
-void ArticlePool::start_fetch_tasks(MsgQueue<NntpFetch::Msg>& msg_queue)
+void ArticlePool::start_fetch_tasks(MoveQueue<NntpFetch::Msg>& msg_queue)
 {
 	const unsigned int cpu_count = std::thread::hardware_concurrency();
 	if(cpu_count > 1)

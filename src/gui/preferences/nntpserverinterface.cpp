@@ -475,21 +475,23 @@ void NntpServerInterface::on_check_complete()
 bool NntpServerInterface::on_settings_changed_timeout()
 {
 	m_to_conn.disconnect();
-
-	try
+	if(!s_cancel_check.load())
 	{
-		PrefsNntpServer const *p_prefs_server = get_selected_server();
-		NntpClient::ServerAddr server = to_serveraddr(p_prefs_server);
+		try
+		{
+			PrefsNntpServer const *p_prefs_server = get_selected_server();
+			NntpClient::ServerAddr server = to_serveraddr(p_prefs_server);
 
-		std::promise<bool> barrier;
-		m_server_check_future = barrier.get_future();
-		p_image_status->set_from_resource(ImageResourcePath("icons/preferences/wait-spinner-sm.gif"));
-		m_server_check_thread = std::thread(check_credentials, server, p_prefs_server->useSsl(), std::move(barrier), std::ref(m_check_dispatch));
-		m_server_check_thread.detach();
-	}
-	catch(const std::exception& e)
-	{
-		p_image_status->set_from_resource(ImageResourcePath("icons/preferences/credentials-failed.png"));
+			std::promise<bool> barrier;
+			m_server_check_future = barrier.get_future();
+			p_image_status->set_from_resource(ImageResourcePath("icons/preferences/wait-spinner-sm.gif"));
+			m_server_check_thread = std::thread(check_credentials, server, p_prefs_server->useSsl(), std::move(barrier), std::ref(m_check_dispatch));
+			m_server_check_thread.detach();
+		}
+		catch(const std::exception& e)
+		{
+			p_image_status->set_from_resource(ImageResourcePath("icons/preferences/credentials-failed.png"));
+		}
 	}
 
 	return false;

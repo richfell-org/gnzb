@@ -25,7 +25,7 @@
 #include <libusenet/nzb.h>
 #include <libusenet/yenc.h>
 #include <libusenet/nntpclient.h>
-#include "../msgqueue.h"
+#include "../movequeue.h"
 #include "../db/nzbdb.h"
 #include "fetchmsg.h"
 
@@ -38,7 +38,7 @@ class ArticleTask
 {
 public:
 
-	ArticleTask(NntpClient::ServerAddr& nntpServer, MsgQueue<NntpFetch::Msg>& msg_queue);
+	ArticleTask(NntpClient::ServerAddr& nntpServer, MoveQueue<NntpFetch::Msg>& msg_queue);
 	ArticleTask(const ArticleTask&) = delete;
 	virtual ~ArticleTask() { closeDb(); }
 
@@ -77,7 +77,7 @@ protected:
 	NntpClient::ServerAddr& mServer;
 	std::unique_ptr<NntpClient::Connection> m_ptr_conn;
 
-	MsgQueue<NntpFetch::Msg>& m_msg_queue;
+	MoveQueue<NntpFetch::Msg>& m_msg_queue;
 
 	NzbDb m_db;
 
