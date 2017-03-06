@@ -116,6 +116,9 @@ public:
 // operations
 public:
 
+	bool is_selected(const GNzb* p_nzb) const;
+	bool is_selected(const GNzb& nzb) const    { return is_selected(&nzb); }
+
 // implementation
 private:
 

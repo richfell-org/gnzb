@@ -138,7 +138,8 @@ void GNzbApplicationWindow::open_nzb_file(const std::string& file_path)
 	add_file_treeview(ptr_gnzb);
 
 	// set the summary window
-	m_win_summary.setNzbSummary(*ptr_gnzb);
+	if(mp_treeview->is_selected(*ptr_gnzb))
+		m_win_summary.setNzbSummary(*ptr_gnzb);
 
 	update_gui_state();
 }
@@ -495,7 +496,7 @@ void GNzbApplicationWindow::on_nzb_selection_changed()
 
 	Gtk::TreeModel::iterator nzb_iter = (0 < ref_selection->count_selected_rows())
 		? ref_selection->get_selected()
-		: ref_nzb_store->children().begin();
+		: ref_nzb_store->children().end();
 
 	// if there are no items on the list then make sure
 	// the file treeview is hidden and update action state
@@ -504,6 +505,7 @@ void GNzbApplicationWindow::on_nzb_selection_changed()
 		if(is_details_view())
 			flip_details_view();
 		update_gui_state();
+		m_win_summary.clear();
 	}
 	else
 	{

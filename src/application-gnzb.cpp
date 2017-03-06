@@ -21,6 +21,8 @@
 #include "runtimesettings.h"
 #include "nntp/fetch.h"
 #include "gui/appwindow.h"
+#include "gui/nzbtreeview.h"
+#include "gui/nzbsummarywindow.h"
 #include "gui/guiutil.h"
 #include "util/sizeformat.h"
 #include "util/sysutil.h"
@@ -161,6 +163,9 @@ bool GNzbApplication::start_download(std::shared_ptr<GNzb>& ptr_gnzb)
 	if(!m_idle_connection.connected())
 		m_idle_connection = Glib::signal_idle().connect(sigc::mem_fun(*this, &GNzbApplication::on_download_progress));
 
+	if(m_ptr_mainwin->get_tree_view()->is_selected(*m_ptr_active_gnzb))
+		m_ptr_mainwin->summary_window().setNzbSummary(*m_ptr_active_gnzb);
+
 	// send notification if needed
 
 	return true;
@@ -178,6 +183,9 @@ void GNzbApplication::pause_download()
 
 	// reset the active NZB state
 	m_ptr_active_gnzb.reset();
+
+	if(m_ptr_mainwin->get_tree_view()->is_selected(*m_ptr_active_gnzb))
+		m_ptr_mainwin->summary_window().setNzbSummary(*m_ptr_active_gnzb);
 }
 
 bool GNzbApplication::start_next_download()

@@ -92,7 +92,7 @@ public:
 	operator bool() const { return bool(mPtrDb); }
 
 	Db& operator =(Db&& that);
-	Db& operator =(const Db&&) = delete;
+	Db& operator =(const Db&) = delete;
 
 // implementation
 protected:
@@ -152,8 +152,6 @@ public:
 
 // operations
 public:
-
-	//Stmt& operator =(const Stmt&) = delete;
 
 	void bindBlob(int paramNum, const void *blob, int numBytes) throw(StmtError);
 	void bindDouble(int paramNum, double val) throw(StmtError);

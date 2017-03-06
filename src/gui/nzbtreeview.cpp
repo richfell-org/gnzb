@@ -69,6 +69,13 @@ Glib::RefPtr<const NzbListStore> NzbTreeView::get_nzb_model() const
 	return Glib::RefPtr<const NzbListStore>::cast_dynamic(get_model());
 }
 
+bool NzbTreeView::is_selected(const GNzb *p_nzb) const
+{
+	Glib::RefPtr<const NzbListStore> ref_store = get_nzb_model();
+	Gtk::TreeIter iter = ref_store->find_gnzb(p_nzb);
+	return get_selection()->is_selected(iter);
+}
+
 /*
  * This is the definition of GdkEventButton
  *

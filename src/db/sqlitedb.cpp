@@ -64,7 +64,7 @@ throw(Error)
 	sqlite3 *pDb = 0;
 
 	// open th DB for the given file name
-	register int status = sqlite3_open_v2(filename, &pDb, flags, 0);
+	int status = sqlite3_open_v2(filename, &pDb, flags, 0);
 	if(SQLITE_OK != status)
 		throw Error(status, sqlite3_errmsg(pDb));
 	mPtrDb.reset(pDb);
@@ -175,7 +175,7 @@ std::string Stmt::resultColumnDeclType(int index)
 	std::string result("");
 	if(mPtrStmt)
 	{
-		register const char *type = sqlite3_column_decltype(mPtrStmt.get(), index);
+		const char *type = sqlite3_column_decltype(mPtrStmt.get(), index);
 		if(0 != type)
 			result.assign(type);
 	}
@@ -189,7 +189,7 @@ std::string Stmt::resultColumnOriginName(int index)
 	std::string result("");
 	if(mPtrStmt)
 	{
-		register const char *type = sqlite3_column_origin_name(mPtrStmt.get(), index);
+		const char *type = sqlite3_column_origin_name(mPtrStmt.get(), index);
 		if(0 != type)
 			result.assign(type);
 	}
@@ -201,7 +201,7 @@ std::string Stmt::resultColumnTableName(int index)
 	std::string result("");
 	if(mPtrStmt)
 	{
-		register const char *type = sqlite3_column_table_name(mPtrStmt.get(), index);
+		const char *type = sqlite3_column_table_name(mPtrStmt.get(), index);
 		if(0 != type)
 			result.assign(type);
 	}
@@ -213,7 +213,7 @@ std::string Stmt::resultColumnDatabaseName(int index)
 	std::string result("");
 	if(mPtrStmt)
 	{
-		register const char *type = sqlite3_column_database_name(mPtrStmt.get(), index);
+		const char *type = sqlite3_column_database_name(mPtrStmt.get(), index);
 		if(0 != type)
 			result.assign(type);
 	}
@@ -238,7 +238,7 @@ void Stmt::prepare(Db& db, const char *sql, int sqlLen/* = -1*/)
 throw(Error)
 {
 	sqlite3_stmt *pStmt = 0;
-	register int status = sqlite3_prepare_v2(db.getSqlite3(), sql, sqlLen, &pStmt, 0);
+	int status = sqlite3_prepare_v2(db.getSqlite3(), sql, sqlLen, &pStmt, 0);
 	while((SQLITE_BUSY == status) || (SQLITE_LOCKED == status))
 	{
 		std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -254,7 +254,7 @@ throw(Error)
 void Stmt::bindBlob(int paramNum, const void *blob, int numBytes)
 throw(StmtError)
 {
-	register int status = sqlite3_bind_blob(mPtrStmt.get(), paramNum, blob, numBytes, 0);
+	int status = sqlite3_bind_blob(mPtrStmt.get(), paramNum, blob, numBytes, 0);
 	if(SQLITE_OK != status)
 		throw StmtError(status);
 }
@@ -262,7 +262,7 @@ throw(StmtError)
 void Stmt::bindDouble(int paramNum, double val)
 throw(StmtError)
 {
-	register int status = sqlite3_bind_double(mPtrStmt.get(), paramNum, val);
+	int status = sqlite3_bind_double(mPtrStmt.get(), paramNum, val);
 	if(SQLITE_OK != status)
 		throw StmtError(status);
 }
@@ -270,7 +270,7 @@ throw(StmtError)
 void Stmt::bindInt(int paramNum, int val)
 throw(StmtError)
 {
-	register int status = sqlite3_bind_int(mPtrStmt.get(), paramNum, val);
+	int status = sqlite3_bind_int(mPtrStmt.get(), paramNum, val);
 	if(SQLITE_OK != status)
 		throw StmtError(status);
 }
@@ -278,7 +278,7 @@ throw(StmtError)
 void Stmt::bindInt64(int paramNum, sqlite3_int64 val)
 throw(StmtError)
 {
-	register int status = sqlite3_bind_int64(mPtrStmt.get(), paramNum, val);
+	int status = sqlite3_bind_int64(mPtrStmt.get(), paramNum, val);
 	if(SQLITE_OK != status)
 		throw StmtError(status);
 }
@@ -294,7 +294,7 @@ throw(StmtError)
 void Stmt::bindText(int paramNum, const char *text, int numBytes)
 throw(StmtError)
 {
-	register int status = sqlite3_bind_text(mPtrStmt.get(), paramNum, text, numBytes, SQLITE_STATIC);
+	int status = sqlite3_bind_text(mPtrStmt.get(), paramNum, text, numBytes, SQLITE_STATIC);
 	if(SQLITE_OK != status)
 		throw StmtError(status);
 }
@@ -302,7 +302,7 @@ throw(StmtError)
 void Stmt::bindText16(int paramNum, const void *text16, int numBytes)
 throw(StmtError)
 {
-	register int status = sqlite3_bind_text16(mPtrStmt.get(), paramNum, text16, numBytes, 0);
+	int status = sqlite3_bind_text16(mPtrStmt.get(), paramNum, text16, numBytes, 0);
 	if(SQLITE_OK != status)
 		throw StmtError(status);
 }
@@ -310,7 +310,7 @@ throw(StmtError)
 void Stmt::bindValue(int paramNum, const sqlite3_value *pValue)
 throw(StmtError)
 {
-	register int status = sqlite3_bind_value(mPtrStmt.get(), paramNum, pValue);
+	int status = sqlite3_bind_value(mPtrStmt.get(), paramNum, pValue);
 	if(SQLITE_OK != status)
 		throw StmtError(status);
 }
@@ -318,7 +318,7 @@ throw(StmtError)
 void Stmt::bindZeroBlob(int paramNum, int blobLength)
 throw(StmtError)
 {
-	register int status = sqlite3_bind_zeroblob(mPtrStmt.get(), paramNum, blobLength);
+	int status = sqlite3_bind_zeroblob(mPtrStmt.get(), paramNum, blobLength);
 	if(SQLITE_OK != status)
 		throw StmtError(status);
 }
@@ -326,7 +326,7 @@ throw(StmtError)
 int Stmt::step()
 throw(StmtError)
 {
-	register int status = sqlite3_step(mPtrStmt.get());
+	int status = sqlite3_step(mPtrStmt.get());
 	//while((SQLITE_BUSY == status) || (SQLITE_LOCKED == status))
 	//{
 	//	std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -337,7 +337,7 @@ throw(StmtError)
 	//	throw StmtError(status);
 
 	// don't thow an exception if DB busy or DB table locked just
-	// return that vlaue and let the caller decide what is appropiate
+	// return that value and let the caller decide what is appropiate
 	switch(status)
 	{
 		case SQLITE_ROW:
@@ -355,7 +355,7 @@ throw(StmtError)
 void Stmt::reset()
 throw(StmtError)
 {
-	register int status = sqlite3_reset(mPtrStmt.get());
+	int status = sqlite3_reset(mPtrStmt.get());
 	if(SQLITE_OK != status)
 		throw StmtError(status);
 }
@@ -426,7 +426,7 @@ std::string Stmt::getResultString(int colIndex) const
 {
 	std::string result("");
 
-	register const unsigned char *text = getResultText(colIndex);
+	const unsigned char *text = getResultText(colIndex);
 	if(0 != text)
 		result.assign((const char*)text);
 	return result;
@@ -436,7 +436,7 @@ std::u16string Stmt::getResultString16(int colIndex) const
 {
 	std::u16string result;
 
-	register const void *text = getResultText16(colIndex);
+	const void *text = getResultText16(colIndex);
 	if(0 != text)
 		result.assign((char16_t*)text);
 	return result;
